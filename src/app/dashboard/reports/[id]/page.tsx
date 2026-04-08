@@ -171,19 +171,16 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
 
-  const { data: analysis, error } = await supabase
-    .from("analyses")
-    .select("*")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
+  const [{ data: analysis, error }, { data: profile }] = await Promise.all([
+    supabase.from("analyses").select("*").eq("id", id).eq("user_id", user.id).single(),
+    supabase.from("profiles").select("plan").eq("id", user.id).single(),
+  ]);
 
   if (error || !analysis) notFound();
 
   const a = analysis as Analysis;
-
-  // TODO: replace with real Stripe subscription check
-  const isPaid = false;
+  const plan = profile?.plan ?? "free";
+  const isPaid = ["monthly", "annual", "consultant", "admin"].includes(plan);
 
   const industry = a.industry_open_to_suggestions ? "" : a.industry_preference;
   const displayIndustry = a.industry_open_to_suggestions ? "Best Match (AI Suggested)" : a.industry_preference;
