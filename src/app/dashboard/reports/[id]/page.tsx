@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowLeft, TrendingUp, MapPin, Users, DollarSign,
-  BarChart2, Lightbulb, FileText, CheckCircle, Clock
+  BarChart2, Lightbulb, FileText, CheckCircle, Clock, AlertCircle
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -28,6 +28,28 @@ interface Analysis {
   secondary_goals: string[];
 }
 
+interface CensusData {
+  state: string;
+  population: string;
+  medianHouseholdIncome: string;
+  medianAge: string;
+  unemploymentRate: string;
+  medianRent: string;
+  bachelorsDegreeCount: string;
+  error?: string;
+}
+
+interface BLSData {
+  industry: string;
+  sectorLabel: string;
+  latestEmployment: string;
+  employmentTrend: string;
+  nationalUnemploymentRate: string;
+  avgHourlyEarnings: string;
+  employmentHistory: { period: string; value: number }[];
+  error?: string;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const BUDGET_LABELS: Record<string, string> = {
@@ -46,29 +68,32 @@ const GOAL_LABELS: Record<string, string> = {
   passive_income: "Passive Income",
 };
 
-// ─── Score Card ───────────────────────────────────────────────────────────────
-
-function ScoreCard({ label, score, color }: { label: string; score: number; color: string }) {
-  return (
-    <div className="bg-white rounded-xl border border-[var(--color-border)] p-4 text-center">
-      <div className={`text-3xl font-extrabold ${color}`}>{score}</div>
-      <div className="text-xs text-[var(--color-slate)] mt-1 font-medium">{label}</div>
-      <div className="mt-2 h-1.5 bg-[var(--color-muted)] rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color.replace("text-", "bg-")}`} style={{ width: `${score}%` }} />
-      </div>
-    </div>
-  );
+async function fetchCensusData(state: string): Promise<CensusData | null> {
+  if (!state) return null;
+  try {
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const res = await fetch(`${base}/api/census?state=${encodeURIComponent(state)}`, {
+      next: { revalidate: 86400 },
+    });
+    return await res.json();
+  } catch { return null; }
 }
 
-// ─── Data Section ─────────────────────────────────────────────────────────────
+async function fetchBLSData(industry: string): Promise<BLSData | null> {
+  if (!industry) return null;
+  try {
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const res = await fetch(`${base}/api/bls?industry=${encodeURIComponent(industry)}`, {
+      next: { revalidate: 86400 },
+    });
+    return await res.json();
+  } catch { return null; }
+}
 
-function DataSection({
-  icon: Icon, title, badge, children
-}: {
-  icon: React.ElementType;
-  title: string;
-  badge?: string;
-  children: React.ReactNode;
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function DataSection({ icon: Icon, title, badge, children }: {
+  icon: React.ElementType; title: string; badge?: string; children: React.ReactNode;
 }) {
   return (
     <div className="bg-white rounded-2xl border border-[var(--color-border)] p-6">
@@ -80,7 +105,7 @@ function DataSection({
           <h3 className="font-bold text-[var(--color-navy)]">{title}</h3>
         </div>
         {badge && (
-          <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full">
+          <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">
             {badge}
           </span>
         )}
@@ -90,13 +115,31 @@ function DataSection({
   );
 }
 
-// ─── Pending Badge ─────────────────────────────────────────────────────────────
+function StatCard({ label, value, color = "text-[var(--color-navy)]" }: {
+  label: string; value: string; color?: string;
+}) {
+  return (
+    <div className="bg-[var(--color-muted)] rounded-xl p-4 text-center">
+      <div className={`text-xl font-extrabold ${color}`}>{value}</div>
+      <div className="text-xs text-[var(--color-slate)] mt-1">{label}</div>
+    </div>
+  );
+}
 
 function PendingData({ source }: { source: string }) {
   return (
     <div className="flex items-center gap-2 bg-[var(--color-muted)] rounded-lg px-4 py-3 text-sm text-[var(--color-slate)]">
       <Clock size={14} className="text-amber-500 shrink-0" />
-      <span>Live data from <strong>{source}</strong> — API integration coming soon</span>
+      <span>Live data from <strong>{source}</strong> — integration coming soon</span>
+    </div>
+  );
+}
+
+function ErrorData({ message }: { message: string }) {
+  return (
+    <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
+      <AlertCircle size={14} className="shrink-0" />
+      <span>{message}</span>
     </div>
   );
 }
@@ -120,8 +163,15 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   if (error || !analysis) notFound();
 
   const a = analysis as Analysis;
-  const industry = a.industry_open_to_suggestions ? "Best Match (AI Suggested)" : a.industry_preference;
+  const industry = a.industry_open_to_suggestions ? "" : a.industry_preference;
+  const displayIndustry = a.industry_open_to_suggestions ? "Best Match (AI Suggested)" : a.industry_preference;
   const location = [a.preferred_city, a.preferred_state].filter(Boolean).join(", ") || "Remote / Online";
+
+  // Fetch real data in parallel
+  const [censusData, blsData] = await Promise.all([
+    a.preferred_state ? fetchCensusData(a.preferred_state) : null,
+    industry ? fetchBLSData(industry) : null,
+  ]);
 
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
@@ -150,8 +200,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-2">Business Analysis Report</div>
-              <h1 className="text-2xl font-extrabold">{industry}</h1>
-              <div className="flex items-center gap-2 mt-2 text-white/70 text-sm">
+              <h1 className="text-2xl font-extrabold">{displayIndustry}</h1>
+              <div className="flex flex-wrap items-center gap-2 mt-2 text-white/70 text-sm">
                 <MapPin size={14} />
                 <span>{location}</span>
                 <span className="text-white/30">·</span>
@@ -160,108 +210,94 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 <span>{GOAL_LABELS[a.primary_goal] ?? a.primary_goal}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-2 text-sm">
-              <Clock size={14} className="text-[var(--color-gold)]" />
-              <span className="text-white/80">Analysis in progress</span>
-            </div>
           </div>
         </div>
 
-        {/* Scores overview */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-slate)] mb-3">Opportunity Scores</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <ScoreCard label="Market Demand" score={78} color="text-[var(--color-blue)]" />
-            <ScoreCard label="Location Fit" score={85} color="text-[var(--color-emerald)]" />
-            <ScoreCard label="Competition Level" score={62} color="text-amber-500" />
-            <ScoreCard label="Overall Score" score={80} color="text-[var(--color-navy)]" />
-          </div>
-          <p className="text-xs text-[var(--color-slate)] mt-2">
-            * Scores based on placeholder data. Live API integration will update these dynamically.
-          </p>
-        </div>
-
-        {/* Industry Analysis */}
-        <DataSection icon={TrendingUp} title="Industry Analysis" badge="BLS API">
-          <div className="space-y-3">
-            <div className="grid sm:grid-cols-3 gap-3">
-              {[
-                { label: "Industry Growth (5yr)", value: "+12.4%", color: "text-[var(--color-emerald)]" },
-                { label: "Avg Annual Revenue", value: "$380,000", color: "text-[var(--color-navy)]" },
-                { label: "Median Profit Margin", value: "18–24%", color: "text-[var(--color-blue)]" },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="bg-[var(--color-muted)] rounded-xl p-4 text-center">
-                  <div className={`text-xl font-extrabold ${color}`}>{value}</div>
-                  <div className="text-xs text-[var(--color-slate)] mt-1">{label}</div>
-                </div>
-              ))}
+        {/* Industry Analysis — BLS */}
+        <DataSection icon={TrendingUp} title="Industry Analysis" badge="BLS Live Data">
+          {blsData?.error ? (
+            <ErrorData message="Could not load BLS data. Please try again later." />
+          ) : blsData ? (
+            <div className="space-y-3">
+              <p className="text-xs text-[var(--color-slate)] font-medium uppercase tracking-wider">
+                Sector: {blsData.sectorLabel}
+              </p>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <StatCard
+                  label="Total Sector Employment"
+                  value={blsData.latestEmployment}
+                  color="text-[var(--color-navy)]"
+                />
+                <StatCard
+                  label="Employment Trend (1yr)"
+                  value={blsData.employmentTrend ?? 'N/A'}
+                  color={blsData.employmentTrend?.startsWith('+') ? "text-[var(--color-emerald)]" : "text-red-500"}
+                />
+                <StatCard
+                  label="Avg Hourly Earnings"
+                  value={blsData.avgHourlyEarnings}
+                  color="text-[var(--color-blue)]"
+                />
+              </div>
+              <div className="bg-[var(--color-muted)] rounded-xl px-4 py-3 flex items-center justify-between text-sm">
+                <span className="text-[var(--color-slate)]">National Unemployment Rate</span>
+                <span className="font-bold text-[var(--color-navy)]">{blsData.nationalUnemploymentRate}</span>
+              </div>
             </div>
-            <PendingData source="Bureau of Labor Statistics (BLS)" />
-          </div>
+          ) : (
+            <PendingData source="Bureau of Labor Statistics — select an industry in your profile to see data" />
+          )}
         </DataSection>
 
-        {/* Location & Demographics */}
-        <DataSection icon={Users} title="Location & Demographics" badge="Census API">
-          <div className="space-y-3">
-            <div className="grid sm:grid-cols-3 gap-3">
-              {[
-                { label: "Population", value: "1.2M", color: "text-[var(--color-navy)]" },
-                { label: "Median Household Income", value: "$58,400", color: "text-[var(--color-blue)]" },
-                { label: "Target Age Group %", value: "34%", color: "text-[var(--color-emerald)]" },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="bg-[var(--color-muted)] rounded-xl p-4 text-center">
-                  <div className={`text-xl font-extrabold ${color}`}>{value}</div>
-                  <div className="text-xs text-[var(--color-slate)] mt-1">{label}</div>
-                </div>
-              ))}
+        {/* Location & Demographics — Census */}
+        <DataSection icon={Users} title="Location & Demographics" badge="Census Live Data">
+          {censusData?.error ? (
+            <ErrorData message="Could not load Census data. Please try again later." />
+          ) : censusData ? (
+            <div className="space-y-3">
+              <p className="text-xs text-[var(--color-slate)] font-medium uppercase tracking-wider">
+                {a.preferred_state} — ACS 5-Year Estimates
+              </p>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <StatCard label="Total Population" value={censusData.population} color="text-[var(--color-navy)]" />
+                <StatCard label="Median Household Income" value={censusData.medianHouseholdIncome} color="text-[var(--color-emerald)]" />
+                <StatCard label="Median Age" value={`${censusData.medianAge} yrs`} color="text-[var(--color-blue)]" />
+              </div>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <StatCard label="Unemployment Rate" value={censusData.unemploymentRate} color="text-amber-500" />
+                <StatCard label="Median Monthly Rent" value={censusData.medianRent} color="text-[var(--color-navy)]" />
+                <StatCard label="College-Educated" value={censusData.bachelorsDegreeCount} color="text-[var(--color-blue)]" />
+              </div>
             </div>
-            <PendingData source="US Census Bureau" />
-          </div>
+          ) : (
+            <PendingData source="US Census Bureau — select a state in your profile to see data" />
+          )}
         </DataSection>
 
-        {/* Competition Map */}
+        {/* Competition Map — coming soon */}
         <DataSection icon={MapPin} title="Competition Map" badge="Google Maps + Yelp">
           <div className="space-y-3">
             <div className="bg-[var(--color-muted)] rounded-xl h-52 flex items-center justify-center text-[var(--color-slate)] text-sm">
               <div className="text-center">
                 <MapPin size={32} className="mx-auto mb-2 opacity-30" />
-                <p className="font-medium">Interactive map coming with Google Maps API</p>
-                <p className="text-xs mt-1 opacity-70">Will show competitor locations, foot traffic, and market gaps</p>
+                <p className="font-medium">Interactive map with radius tool</p>
+                <p className="text-xs mt-1 opacity-70">NAICS codes, competitor pins, demographics by radius — coming next</p>
               </div>
             </div>
-            <div className="grid sm:grid-cols-3 gap-3">
-              {[
-                { label: "Direct Competitors Nearby", value: "8", color: "text-amber-500" },
-                { label: "Avg Competitor Rating", value: "3.8 ★", color: "text-[var(--color-navy)]" },
-                { label: "Market Gap Score", value: "High", color: "text-[var(--color-emerald)]" },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="bg-[var(--color-muted)] rounded-xl p-4 text-center">
-                  <div className={`text-xl font-extrabold ${color}`}>{value}</div>
-                  <div className="text-xs text-[var(--color-slate)] mt-1">{label}</div>
-                </div>
-              ))}
-            </div>
-            <PendingData source="Google Maps API + Yelp Fusion API" />
+            <PendingData source="Google Maps API + Yelp Fusion" />
           </div>
         </DataSection>
 
         {/* Labor Market */}
-        <DataSection icon={BarChart2} title="Labor Market" badge="BLS API">
-          <div className="space-y-3">
-            <div className="grid sm:grid-cols-3 gap-3">
-              {[
-                { label: "Local Unemployment Rate", value: "3.8%", color: "text-[var(--color-emerald)]" },
-                { label: "Avg Hourly Wage (Industry)", value: "$18.40", color: "text-[var(--color-navy)]" },
-                { label: "Labor Availability", value: "High", color: "text-[var(--color-blue)]" },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="bg-[var(--color-muted)] rounded-xl p-4 text-center">
-                  <div className={`text-xl font-extrabold ${color}`}>{value}</div>
-                  <div className="text-xs text-[var(--color-slate)] mt-1">{label}</div>
-                </div>
-              ))}
+        <DataSection icon={BarChart2} title="Labor Market" badge="BLS Live Data">
+          {blsData && !blsData.error ? (
+            <div className="grid sm:grid-cols-2 gap-3">
+              <StatCard label="National Unemployment" value={blsData.nationalUnemploymentRate} color="text-[var(--color-emerald)]" />
+              <StatCard label="Avg Hourly Earnings (All Industries)" value={blsData.avgHourlyEarnings} color="text-[var(--color-navy)]" />
             </div>
-            <PendingData source="Bureau of Labor Statistics (BLS)" />
-          </div>
+          ) : (
+            <PendingData source="Bureau of Labor Statistics" />
+          )}
         </DataSection>
 
         {/* Financing Options */}
@@ -295,9 +331,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               "Validate your concept by talking to 10 potential customers in your target area",
               "Register your business entity (LLC recommended) with your state",
               "Research local zoning laws for your business type",
-              "Apply for an EIN (Employer Identification Number) with the IRS — free and instant",
+              "Apply for an EIN with the IRS — free and instant at irs.gov",
               "Open a dedicated business bank account",
-              "Consult a Neur advisor for a 1-on-1 strategy session",
+              "Book a Neur advisor consultation for a personalized strategy session",
             ].map((step, i) => (
               <div key={i} className="flex items-start gap-3 px-4 py-3 bg-[var(--color-muted)] rounded-xl">
                 <div className="w-5 h-5 rounded-full bg-[var(--color-navy)] text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">
@@ -309,7 +345,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </div>
         </DataSection>
 
-        {/* Submit for human review */}
+        {/* Book consultation CTA */}
         <div className="bg-[var(--color-gold)]/10 border border-[var(--color-gold)] rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="font-bold text-[var(--color-navy)]">Want a deeper analysis?</h3>
@@ -325,7 +361,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </Link>
         </div>
 
-        {/* Submission summary */}
+        {/* Questionnaire Summary */}
         <div className="bg-white rounded-2xl border border-[var(--color-border)] p-6">
           <h3 className="font-bold text-[var(--color-navy)] mb-4 flex items-center gap-2">
             <CheckCircle size={16} className="text-[var(--color-emerald)]" /> Your Questionnaire Summary
@@ -333,7 +369,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
             {[
               ["Type", a.entrepreneur_type === "new" ? "Aspiring Entrepreneur" : "Expanding Business"],
-              ["Industry", industry],
+              ["Industry", displayIndustry],
               ["Location", location],
               ["Operation", a.operation_type],
               ["Budget", BUDGET_LABELS[a.budget_range] ?? a.budget_range],
