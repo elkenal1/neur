@@ -25,40 +25,60 @@ import { NextRequest, NextResponse } from 'next/server'
 const BLS_BASE = 'https://api.bls.gov/publicAPI/v2/timeseries/data/'
 const KEY = process.env.BLS_API_KEY
 
-// Maps industry preference to BLS supersector series
-const INDUSTRY_SERIES: Record<string, { seriesId: string; label: string }> = {
-  'Food & Beverage':          { seriesId: 'CES7000000001', label: 'Leisure & Hospitality' },
-  'Hospitality':              { seriesId: 'CES7000000001', label: 'Leisure & Hospitality' },
-  'Entertainment':            { seriesId: 'CES7000000001', label: 'Leisure & Hospitality' },
-  'Retail':                   { seriesId: 'CES4000000001', label: 'Trade, Transport & Utilities' },
-  'E-commerce':               { seriesId: 'CES4000000001', label: 'Trade, Transport & Utilities' },
-  'Transportation':           { seriesId: 'CES4000000001', label: 'Trade, Transport & Utilities' },
-  'Technology':               { seriesId: 'CES5000000001', label: 'Information & Technology' },
-  'Finance':                  { seriesId: 'CES5500000001', label: 'Financial Activities' },
-  'Real Estate':              { seriesId: 'CES5500000001', label: 'Financial Activities' },
-  'Professional Services':    { seriesId: 'CES6000000001', label: 'Professional & Business Services' },
-  'Health & Wellness':        { seriesId: 'CES6500000001', label: 'Education & Health Services' },
-  'Fitness':                  { seriesId: 'CES6500000001', label: 'Education & Health Services' },
-  'Education & Tutoring':     { seriesId: 'CES6500000001', label: 'Education & Health Services' },
-  'Childcare':                { seriesId: 'CES6500000001', label: 'Education & Health Services' },
-  'Construction':             { seriesId: 'CES2000000001', label: 'Construction' },
-  'Home Services':            { seriesId: 'CES2000000001', label: 'Construction & Home Services' },
-  'Manufacturing':            { seriesId: 'CES3000000001', label: 'Manufacturing' },
-  'Agriculture':              { seriesId: 'CES1000000001', label: 'Natural Resources & Mining' },
-  'Beauty & Personal Care':   { seriesId: 'CES8000000001', label: 'Other Services' },
-  'Automotive':               { seriesId: 'CES8000000001', label: 'Other Services' },
+// Maps industry preference to the most granular available BLS series
+// Using NAICS-based CES detailed industry codes where possible
+const INDUSTRY_SERIES: Record<string, { seriesId: string; label: string; wagesSeries?: string }> = {
+  // Leisure & Hospitality — granular subsectors
+  'Food & Beverage':          { seriesId: 'CES7072000001', label: 'Food Services & Drinking Places',   wagesSeries: 'CES7072000008' },
+  'Hospitality':              { seriesId: 'CES7071000001', label: 'Accommodation',                     wagesSeries: 'CES7071000008' },
+  'Entertainment':            { seriesId: 'CES7071100001', label: 'Arts, Entertainment & Recreation',  wagesSeries: 'CES7000000008' },
+
+  // Retail & Trade
+  'Retail':                   { seriesId: 'CES4200000001', label: 'Retail Trade',                      wagesSeries: 'CES4200000008' },
+  'E-commerce':               { seriesId: 'CES4200000001', label: 'Retail Trade',                      wagesSeries: 'CES4200000008' },
+  'Transportation':           { seriesId: 'CES4300000001', label: 'Transportation & Warehousing',      wagesSeries: 'CES4300000008' },
+
+  // Professional & Business Services
+  'Professional Services':    { seriesId: 'CES6000000001', label: 'Professional & Business Services',  wagesSeries: 'CES6000000008' },
+  'Real Estate':              { seriesId: 'CES5552200001', label: 'Real Estate',                       wagesSeries: 'CES5500000008' },
+  'Finance':                  { seriesId: 'CES5552100001', label: 'Finance & Insurance',               wagesSeries: 'CES5500000008' },
+
+  // Technology & Information
+  'Technology':               { seriesId: 'CES5000000001', label: 'Information & Technology',          wagesSeries: 'CES5000000008' },
+
+  // Education & Health
+  'Health & Wellness':        { seriesId: 'CES6562000001', label: 'Health Care & Social Assistance',   wagesSeries: 'CES6500000008' },
+  'Fitness':                  { seriesId: 'CES6562000001', label: 'Health Care & Social Assistance',   wagesSeries: 'CES6500000008' },
+  'Education & Tutoring':     { seriesId: 'CES6561000001', label: 'Educational Services',              wagesSeries: 'CES6500000008' },
+  'Childcare':                { seriesId: 'CES6562000001', label: 'Health Care & Social Assistance',   wagesSeries: 'CES6500000008' },
+
+  // Construction & Trades
+  'Construction':             { seriesId: 'CES2000000001', label: 'Construction',                      wagesSeries: 'CES2000000008' },
+  'Home Services':            { seriesId: 'CES2000000001', label: 'Construction & Home Services',      wagesSeries: 'CES2000000008' },
+
+  // Manufacturing
+  'Manufacturing':            { seriesId: 'CES3000000001', label: 'Manufacturing',                     wagesSeries: 'CES3000000008' },
+
+  // Other Services
+  'Beauty & Personal Care':   { seriesId: 'CES8000000001', label: 'Other Personal Services',           wagesSeries: 'CES8000000008' },
+  'Automotive':               { seriesId: 'CES8000000001', label: 'Other Services (Automotive)',       wagesSeries: 'CES8000000008' },
+
+  // Agriculture / Natural Resources
+  'Agriculture':              { seriesId: 'CES1000000001', label: 'Natural Resources & Mining',        wagesSeries: 'CES1000000008' },
 }
 
-const DEFAULT_SERIES = { seriesId: 'CES6000000001', label: 'Professional & Business Services' }
+const DEFAULT_SERIES = { seriesId: 'CES6000000001', label: 'Professional & Business Services', wagesSeries: 'CES6000000008' }
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const industry = searchParams.get('industry') || ''
 
-  const { seriesId, label } = INDUSTRY_SERIES[industry] ?? DEFAULT_SERIES
+  const { seriesId, label, wagesSeries } = INDUSTRY_SERIES[industry] ?? DEFAULT_SERIES
+  const wagesSeriesId = wagesSeries ?? 'CEU0000000008'
 
-  // Fetch: industry employment + national unemployment + avg hourly earnings
-  const seriesIds = [seriesId, 'LNS14000000', 'CEU0000000008']
+  // Fetch: industry employment + national unemployment + industry-specific wages + weekly hours
+  const weeklyHoursSeries = wagesSeriesId.replace('000008', '000007') // hours series = wages series with 07 suffix
+  const seriesIds = [seriesId, 'LNS14000000', wagesSeriesId, weeklyHoursSeries]
   const currentYear = new Date().getFullYear()
 
   const body = {
@@ -92,9 +112,10 @@ export async function GET(request: NextRequest) {
 
     const industryData = results[seriesId] ?? []
     const unemploymentData = results['LNS14000000'] ?? []
-    const wagesData = results['CEU0000000008'] ?? []
+    const wagesData = results[wagesSeriesId] ?? []
+    const hoursData = results[weeklyHoursSeries] ?? []
 
-    // Calculate employment trend (latest vs 2 years ago)
+    // Calculate employment trend (latest vs 12 months ago)
     let employmentTrend = null
     if (industryData.length >= 2) {
       const latest = parseFloat(industryData[0].value)
@@ -114,10 +135,13 @@ export async function GET(request: NextRequest) {
         ? `${unemploymentData[0].value}%`
         : 'N/A',
       avgHourlyEarnings: wagesData[0]
-        ? `$${wagesData[0].value}/hr`
+        ? `$${parseFloat(wagesData[0].value).toFixed(2)}/hr`
         : 'N/A',
-      employmentHistory: industryData.slice(0, 8).reverse().map((d) => ({
-        period: `${d.year} ${d.period.replace('M', 'M')}`,
+      avgWeeklyHours: hoursData[0]
+        ? `${hoursData[0].value} hrs/wk`
+        : 'N/A',
+      employmentHistory: industryData.slice(0, 12).reverse().map((d) => ({
+        period: `${d.year}-${d.period.replace('M', '')}`,
         value: parseFloat(d.value),
       })),
     })
