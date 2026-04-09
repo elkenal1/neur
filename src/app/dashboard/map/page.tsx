@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -65,7 +66,7 @@ export default async function MapPage() {
   if (!user) redirect('/sign-in')
 
   // Get user's latest analysis for default location + industry
-  const { data: profile } = await supabase
+  const { data: profile } = await supabaseAdmin
     .from('profiles')
     .select('plan')
     .eq('id', user.id)

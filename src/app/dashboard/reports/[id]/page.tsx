@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -173,7 +174,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
   const [{ data: analysis, error }, { data: profile }] = await Promise.all([
     supabase.from("analyses").select("*").eq("id", id).eq("user_id", user.id).single(),
-    supabase.from("profiles").select("plan").eq("id", user.id).single(),
+    supabaseAdmin.from("profiles").select("plan").eq("id", user.id).single(),
   ]);
 
   if (error || !analysis) notFound();

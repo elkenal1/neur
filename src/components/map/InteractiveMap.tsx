@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   APIProvider,
   Map,
   AdvancedMarker,
-  Pin,
   useMap,
   useMapsLibrary,
 } from '@vis.gl/react-google-maps'
@@ -49,11 +48,10 @@ function RadiusCircle({ center, radiusMeters }: { center: google.maps.LatLngLite
   const mapsLib = useMapsLibrary('maps')
   const circleRef = useRef<google.maps.Circle | null>(null)
 
-  if (mapsLib && map) {
-    if (circleRef.current) {
-      circleRef.current.setCenter(center)
-      circleRef.current.setRadius(radiusMeters)
-    } else {
+  useEffect(() => {
+    if (!mapsLib || !map) return
+
+    if (!circleRef.current) {
       circleRef.current = new mapsLib.Circle({
         map,
         center,
@@ -64,8 +62,16 @@ function RadiusCircle({ center, radiusMeters }: { center: google.maps.LatLngLite
         strokeOpacity: 0.6,
         strokeWeight: 2,
       })
+    } else {
+      circleRef.current.setCenter(center)
+      circleRef.current.setRadius(radiusMeters)
     }
-  }
+
+    return () => {
+      circleRef.current?.setMap(null)
+      circleRef.current = null
+    }
+  }, [map, mapsLib, center, radiusMeters])
 
   return null
 }
@@ -298,10 +304,16 @@ function MapInner({
               position={{ lat: place.lat, lng: place.lng }}
               onClick={() => setSelectedPlace(p => p?.id === place.id ? null : place)}
             >
-              <Pin
-                background={selectedPlace?.id === place.id ? '#F59E0B' : '#2563EB'}
-                borderColor={selectedPlace?.id === place.id ? '#D97706' : '#1D4ED8'}
-                glyphColor="#FFFFFF"
+              <div
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: '50%',
+                  background: selectedPlace?.id === place.id ? '#F59E0B' : '#2563EB',
+                  border: '2px solid white',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                  cursor: 'pointer',
+                }}
               />
             </AdvancedMarker>
           ))}
