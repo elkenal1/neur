@@ -1,23 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Census Bureau ACS 5-Year Estimates
-// Docs: https://www.census.gov/data/developers/data-sets/acs-5year.html
+// When lat/lng provided: reverse-geocode to county → fetch county-level ACS data
+// Fallback: state-level data if only state name provided
 //
-// Variables we fetch per state/county:
+// Variables:
 //   B01003_001E — Total population
 //   B19013_001E — Median household income
 //   B01002_001E — Median age
 //   B23025_004E — Employed civilian population
 //   B23025_005E — Unemployed civilian population
 //   B25058_001E — Median contract rent
-//   B15003_022E — Bachelor's degree holders (education proxy)
-//   B01001_002E — Male population (for age breakdown)
-//   B01001_026E — Female population
+//   B15003_022E — Bachelor's degree holders
 
 const CENSUS_BASE = 'https://api.census.gov/data/2022/acs/acs5'
+const GEOCODER_BASE = 'https://geocoding.geo.census.gov/geocoder/geographies/coordinates'
 const KEY = process.env.CENSUS_API_KEY
 
-// Maps state names to FIPS codes
 const STATE_FIPS: Record<string, string> = {
   'Alabama': '01', 'Alaska': '02', 'Arizona': '04', 'Arkansas': '05',
   'California': '06', 'Colorado': '08', 'Connecticut': '09', 'Delaware': '10',
@@ -34,59 +33,93 @@ const STATE_FIPS: Record<string, string> = {
   'Wisconsin': '55', 'Wyoming': '56',
 }
 
+const VARIABLES = [
+  'B01003_001E', // Total population
+  'B19013_001E', // Median household income
+  'B01002_001E', // Median age
+  'B23025_004E', // Employed
+  'B23025_005E', // Unemployed
+  'B25058_001E', // Median rent
+  'B15003_022E', // Bachelor's degree
+].join(',')
+
+function formatResult(data: Record<string, string>, areaName: string) {
+  const population = parseInt(data['B01003_001E'])
+  const employed = parseInt(data['B23025_004E'])
+  const unemployed = parseInt(data['B23025_005E'])
+  const laborForce = employed + unemployed
+  const unemploymentRate = laborForce > 0
+    ? ((unemployed / laborForce) * 100).toFixed(1)
+    : null
+
+  return {
+    areaName,
+    population: population.toLocaleString(),
+    medianHouseholdIncome: parseInt(data['B19013_001E']).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
+    medianAge: data['B01002_001E'],
+    unemploymentRate: unemploymentRate ? `${unemploymentRate}%` : 'N/A',
+    medianRent: parseInt(data['B25058_001E']).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
+    bachelorsDegreeCount: parseInt(data['B15003_022E']).toLocaleString(),
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
+  const lat = searchParams.get('lat')
+  const lng = searchParams.get('lng')
   const state = searchParams.get('state')
 
-  if (!state) {
-    return NextResponse.json({ error: 'state parameter required' }, { status: 400 })
-  }
-
-  const fips = STATE_FIPS[state]
-  if (!fips) {
-    return NextResponse.json({ error: `Unknown state: ${state}` }, { status: 400 })
-  }
-
-  const variables = [
-    'B01003_001E', // Total population
-    'B19013_001E', // Median household income
-    'B01002_001E', // Median age
-    'B23025_004E', // Employed
-    'B23025_005E', // Unemployed
-    'B25058_001E', // Median rent
-    'B15003_022E', // Bachelor's degree
-  ].join(',')
-
-  const url = `${CENSUS_BASE}?get=NAME,${variables}&for=state:${fips}&key=${KEY}`
-
   try {
-    const res = await fetch(url, { next: { revalidate: 86400 } }) // cache 24h
-    if (!res.ok) throw new Error(`Census API error: ${res.status}`)
+    // ── County-level lookup from coordinates ──────────────────────────────────
+    if (lat && lng) {
+      // Step 1: reverse-geocode coordinates → county FIPS
+      const geoUrl = `${GEOCODER_BASE}?x=${lng}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Vintages&layers=Counties&format=json`
+      const geoRes = await fetch(geoUrl, { next: { revalidate: 3600 } })
+      const geoData = await geoRes.json()
 
-    const raw: string[][] = await res.json()
-    const headers = raw[0]
-    const values = raw[1]
+      const county = geoData?.result?.geographies?.Counties?.[0]
+      if (!county) {
+        return NextResponse.json({ error: 'Could not find county for coordinates' }, { status: 404 })
+      }
 
-    const data: Record<string, string> = {}
-    headers.forEach((h, i) => { data[h] = values[i] })
+      const stateFips = county.STATE
+      const countyFips = county.COUNTY
+      const countyName = county.NAME // e.g. "Travis County"
 
-    const population = parseInt(data['B01003_001E'])
-    const employed = parseInt(data['B23025_004E'])
-    const unemployed = parseInt(data['B23025_005E'])
-    const laborForce = employed + unemployed
-    const unemploymentRate = laborForce > 0
-      ? ((unemployed / laborForce) * 100).toFixed(1)
-      : null
+      // Step 2: fetch ACS data for that county
+      const url = `${CENSUS_BASE}?get=NAME,${VARIABLES}&for=county:${countyFips}&in=state:${stateFips}&key=${KEY}`
+      const res = await fetch(url, { next: { revalidate: 86400 } })
+      if (!res.ok) throw new Error(`Census API error: ${res.status}`)
 
-    return NextResponse.json({
-      state,
-      population: population.toLocaleString(),
-      medianHouseholdIncome: parseInt(data['B19013_001E']).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
-      medianAge: data['B01002_001E'],
-      unemploymentRate: unemploymentRate ? `${unemploymentRate}%` : 'N/A',
-      medianRent: parseInt(data['B25058_001E']).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
-      bachelorsDegreeCount: parseInt(data['B15003_022E']).toLocaleString(),
-    })
+      const raw: string[][] = await res.json()
+      const headers = raw[0]
+      const values = raw[1]
+      const data: Record<string, string> = {}
+      headers.forEach((h, i) => { data[h] = values[i] })
+
+      return NextResponse.json(formatResult(data, countyName))
+    }
+
+    // ── State-level fallback ──────────────────────────────────────────────────
+    if (state) {
+      const fips = STATE_FIPS[state]
+      if (!fips) return NextResponse.json({ error: `Unknown state: ${state}` }, { status: 400 })
+
+      const url = `${CENSUS_BASE}?get=NAME,${VARIABLES}&for=state:${fips}&key=${KEY}`
+      const res = await fetch(url, { next: { revalidate: 86400 } })
+      if (!res.ok) throw new Error(`Census API error: ${res.status}`)
+
+      const raw: string[][] = await res.json()
+      const headers = raw[0]
+      const values = raw[1]
+      const data: Record<string, string> = {}
+      headers.forEach((h, i) => { data[h] = values[i] })
+
+      return NextResponse.json(formatResult(data, state))
+    }
+
+    return NextResponse.json({ error: 'lat/lng or state parameter required' }, { status: 400 })
+
   } catch (err) {
     console.error('Census API error:', err)
     return NextResponse.json({ error: 'Failed to fetch Census data' }, { status: 500 })

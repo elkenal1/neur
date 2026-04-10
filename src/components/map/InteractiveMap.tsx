@@ -25,6 +25,7 @@ interface Place {
 }
 
 interface DemographicData {
+  areaName: string
   population: string
   medianHouseholdIncome: string
   medianAge: string
@@ -85,14 +86,14 @@ function MapInner({
   isPaid: boolean; defaultState: string;
 }) {
   const [center, setCenter] = useState<google.maps.LatLngLiteral>({ lat: defaultLat, lng: defaultLng })
-  const [radiusKm, setRadiusKm] = useState(5)
+  const [radiusMiles, setRadiusMiles] = useState(5)
   const [places, setPlaces] = useState<Place[]>([])
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
   const [demographics, setDemographics] = useState<DemographicData | null>(null)
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
 
-  const radiusMeters = radiusKm * 1000
+  const radiusMeters = Math.round(radiusMiles * 1609.34)
 
   async function searchArea() {
     setLoading(true)
@@ -100,14 +101,12 @@ function MapInner({
 
     const [placesRes, censusRes] = await Promise.all([
       fetch(`/api/places?lat=${center.lat}&lng=${center.lng}&radius=${radiusMeters}&industry=${encodeURIComponent(industry)}`),
-      defaultState ? fetch(`/api/census?state=${encodeURIComponent(defaultState)}`) : null,
+      fetch(`/api/census?lat=${center.lat}&lng=${center.lng}`),
     ])
 
     const placesData = await placesRes.json()
-    if (censusRes) {
-      const censusData = await censusRes.json()
-      if (!censusData.error) setDemographics(censusData)
-    }
+    const censusData = await censusRes.json()
+    if (!censusData.error) setDemographics(censusData)
 
     setPlaces(placesData.places || [])
     setSearched(true)
@@ -139,39 +138,39 @@ function MapInner({
         {/* Radius control */}
         <div className="p-4 border-b border-[var(--color-border)]">
           <label className="block text-xs font-semibold text-[var(--color-foreground)] mb-2">
-            Search Radius: <span className="text-[var(--color-navy)]">{radiusKm} km</span>
+            Search Radius: <span className="text-[var(--color-navy)]">{radiusMiles} mi</span>
           </label>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setRadiusKm(r => Math.max(1, r - 1))}
+              onClick={() => setRadiusMiles(r => Math.max(1, r - 1))}
               className="w-7 h-7 rounded-lg border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
             >
               <Minus size={12} />
             </button>
             <input
-              type="range" min={1} max={50} value={radiusKm}
-              onChange={e => setRadiusKm(Number(e.target.value))}
+              type="range" min={1} max={25} value={radiusMiles}
+              onChange={e => setRadiusMiles(Number(e.target.value))}
               className="flex-1 accent-[var(--color-navy)]"
             />
             <button
-              onClick={() => setRadiusKm(r => Math.min(50, r + 1))}
+              onClick={() => setRadiusMiles(r => Math.min(25, r + 1))}
               className="w-7 h-7 rounded-lg border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
             >
               <Plus size={12} />
             </button>
           </div>
           <div className="flex gap-2 mt-2">
-            {[1, 5, 10, 25].map(km => (
+            {[1, 5, 10, 25].map(mi => (
               <button
-                key={km}
-                onClick={() => setRadiusKm(km)}
+                key={mi}
+                onClick={() => setRadiusMiles(mi)}
                 className={`flex-1 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                  radiusKm === km
+                  radiusMiles === mi
                     ? 'bg-[var(--color-navy)] text-white'
                     : 'bg-[var(--color-muted)] text-[var(--color-slate)] hover:bg-[var(--color-border)]'
                 }`}
               >
-                {km}km
+                {mi}mi
               </button>
             ))}
           </div>
@@ -227,7 +226,10 @@ function MapInner({
         {/* Demographics */}
         {isPaid && demographics && (
           <div className="p-4 border-b border-[var(--color-border)]">
-            <div className="text-xs font-semibold text-[var(--color-slate)] uppercase tracking-wider mb-3">Demographics</div>
+            <div className="text-xs font-semibold text-[var(--color-slate)] uppercase tracking-wider mb-1">Demographics</div>
+            {demographics.areaName && (
+              <div className="text-[10px] text-[var(--color-blue)] font-medium mb-2">{demographics.areaName}</div>
+            )}
             <div className="space-y-2">
               {[
                 ['Population', demographics.population],
@@ -236,9 +238,9 @@ function MapInner({
                 ['Unemployment', demographics.unemploymentRate],
                 ['Median Rent', demographics.medianRent],
               ].map(([label, value]) => (
-                <div key={label} className="flex justify-between text-xs bg-[var(--color-muted)] px-3 py-2 rounded-lg">
-                  <span className="text-[var(--color-slate)]">{label}</span>
-                  <span className="font-semibold text-[var(--color-navy)]">{value}</span>
+                <div key={label} className="flex justify-between items-center text-xs bg-[var(--color-muted)] px-3 py-2 rounded-lg gap-2">
+                  <span className="text-[var(--color-slate)] shrink-0">{label}</span>
+                  <span className="font-semibold text-[var(--color-navy)] text-right">{value}</span>
                 </div>
               ))}
             </div>
