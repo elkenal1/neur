@@ -13,6 +13,7 @@ export default function StepBackground({ data, onChange }: Props) {
         <p className="text-sm text-[var(--color-slate)]">This helps us tailor your analysis to your situation.</p>
       </div>
 
+      {/* Entrepreneur type */}
       <div>
         <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
           What best describes you?
@@ -44,6 +45,7 @@ export default function StepBackground({ data, onChange }: Props) {
         </div>
       </div>
 
+      {/* Prior experience */}
       <div>
         <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
           Do you have prior business or industry experience?
@@ -80,6 +82,85 @@ export default function StepBackground({ data, onChange }: Props) {
           />
         </div>
       )}
+
+      {/* Commitment level */}
+      <div>
+        <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
+          How will you be committing to this business?
+        </label>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {[
+            { value: "full_time", label: "Full-Time", desc: "This will be my primary focus" },
+            { value: "part_time", label: "Part-Time", desc: "I'll run this alongside other commitments" },
+          ].map(({ value, label, desc }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onChange("commitment_level", value)}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${
+                data.commitment_level === value
+                  ? "border-[var(--color-navy)] bg-[var(--color-navy)]/5"
+                  : "border-[var(--color-border)] hover:border-[var(--color-blue)]"
+              }`}
+            >
+              <div className="font-semibold text-sm text-[var(--color-navy)]">{label}</div>
+              <div className="text-xs text-[var(--color-slate)] mt-0.5">{desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Business partners */}
+      <div>
+        <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
+          Will you have business partners?
+        </label>
+        <div className="flex gap-3">
+          {[{ value: true, label: "Yes" }, { value: false, label: "No" }].map(({ value, label }) => (
+            <button
+              key={String(value)}
+              type="button"
+              onClick={() => onChange("has_business_partners", value)}
+              className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${
+                data.has_business_partners === value
+                  ? "border-[var(--color-navy)] bg-[var(--color-navy)] text-white"
+                  : "border-[var(--color-border)] text-[var(--color-slate)] hover:border-[var(--color-blue)]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Prior business ownership */}
+      <div>
+        <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
+          Have you owned a business before?
+        </label>
+        <div className="space-y-2">
+          {[
+            { value: "never", label: "Never", desc: "This is my first time" },
+            { value: "previously_owned", label: "Previously Owned", desc: "I've owned a business in the past" },
+            { value: "currently_own", label: "Currently Own", desc: "I already own an active business" },
+          ].map(({ value, label, desc }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onChange("prior_business_ownership", value)}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 text-left transition-all ${
+                data.prior_business_ownership === value
+                  ? "border-[var(--color-navy)] bg-[var(--color-navy)]/5"
+                  : "border-[var(--color-border)] hover:border-[var(--color-blue)]"
+              }`}
+            >
+              <span className="font-semibold text-sm text-[var(--color-navy)]">{label}</span>
+              <span className="text-xs text-[var(--color-slate)]">{desc}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }
