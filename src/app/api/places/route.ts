@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // can see relevant competitor businesses on the map.
 
 const PLACES_BASE = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
-const KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+const KEY = process.env.GOOGLE_MAPS_SERVER_KEY
 
 // Maps Neur industry names → Google Places types
 const INDUSTRY_TO_PLACE_TYPES: Record<string, string[]> = {
