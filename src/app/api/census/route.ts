@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // Census Bureau ACS 5-Year Estimates
 // Mode 1 — ?city=Austin&state=Texas  → query ACS place-level data directly (no geocoding needed)
 // Mode 2 — ?lat=30.2&lng=-97.7       → county FIPS → county ACS data (used by map)
