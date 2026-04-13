@@ -31,7 +31,7 @@ interface Analysis {
 }
 
 interface CensusData {
-  state: string;
+  areaName: string;
   population: string;
   medianHouseholdIncome: string;
   medianAge: string;
@@ -71,10 +71,13 @@ const GOAL_LABELS: Record<string, string> = {
   passive_income: "Passive Income",
 };
 
-async function fetchCensusData(state: string): Promise<CensusData | null> {
+async function fetchCensusData(state: string, city?: string): Promise<CensusData | null> {
   try {
     const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const res = await fetch(`${base}/api/census?state=${encodeURIComponent(state)}`, { next: { revalidate: 86400 } });
+    const url = city
+      ? `${base}/api/census?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`
+      : `${base}/api/census?state=${encodeURIComponent(state)}`;
+    const res = await fetch(url, { next: { revalidate: 86400 } });
     return await res.json();
   } catch { return null; }
 }
@@ -188,7 +191,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const location = [a.preferred_city, a.preferred_state].filter(Boolean).join(", ") || "Remote / Online";
 
   const [censusData, blsData] = await Promise.all([
-    a.preferred_state ? fetchCensusData(a.preferred_state) : null,
+    a.preferred_state ? fetchCensusData(a.preferred_state, a.preferred_city || undefined) : null,
     industry ? fetchBLSData(industry) : null,
   ]);
 
@@ -289,7 +292,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         <DataSection icon={Users} title="Market Snapshot" badge="Census Data">
           {censusData && !censusData.error ? (
             <div className="space-y-3">
-              <p className="text-xs text-[var(--color-slate)] font-medium uppercase tracking-wider">{a.preferred_state} — ACS 5-Year Estimates</p>
+              <p className="text-xs text-[var(--color-slate)] font-medium uppercase tracking-wider">{censusData.areaName} — ACS 5-Year Estimates</p>
               <div className="grid sm:grid-cols-2 gap-3">
                 <StatCard label="Total Population" value={censusData.population} color="text-[var(--color-navy)]" />
                 <StatCard label="Median Household Income" value={censusData.medianHouseholdIncome} color="text-[var(--color-emerald)]" />

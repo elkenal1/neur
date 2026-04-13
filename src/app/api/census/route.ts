@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Census Bureau ACS 5-Year Estimates
-// When lat/lng provided: reverse-geocode to county → fetch county-level ACS data
-// Fallback: state-level data if only state name provided
+// Mode 1 — ?city=Austin&state=Texas  → geocode city → county FIPS → county ACS data
+// Mode 2 — ?lat=30.2&lng=-97.7       → county FIPS → county ACS data (used by map)
+// Mode 3 — ?state=Texas              → state-level ACS data (fallback)
 //
 // Variables:
 //   B01003_001E — Total population
@@ -15,7 +16,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const CENSUS_BASE = 'https://api.census.gov/data/2022/acs/acs5'
 const GEOCODER_BASE = 'https://geocoding.geo.census.gov/geocoder/geographies/coordinates'
+const GOOGLE_GEOCODE_BASE = 'https://maps.googleapis.com/maps/api/geocode/json'
 const KEY = process.env.CENSUS_API_KEY
+const GOOGLE_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
 const STATE_FIPS: Record<string, string> = {
   'Alabama': '01', 'Alaska': '02', 'Arizona': '04', 'Arkansas': '05',
@@ -63,41 +66,58 @@ function formatResult(data: Record<string, string>, areaName: string) {
   }
 }
 
+async function coordsToCountyACS(lat: string, lng: string) {
+  const geoUrl = `${GEOCODER_BASE}?x=${lng}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Vintages&layers=Counties&format=json`
+  const geoRes = await fetch(geoUrl, { next: { revalidate: 3600 } })
+  const geoData = await geoRes.json()
+
+  const county = geoData?.result?.geographies?.Counties?.[0]
+  if (!county) throw new Error('Could not find county for coordinates')
+
+  const stateFips = county.STATE
+  const countyFips = county.COUNTY
+  const countyName = county.NAME
+
+  const url = `${CENSUS_BASE}?get=NAME,${VARIABLES}&for=county:${countyFips}&in=state:${stateFips}&key=${KEY}`
+  const res = await fetch(url, { next: { revalidate: 86400 } })
+  if (!res.ok) throw new Error(`Census API error: ${res.status}`)
+
+  const raw: string[][] = await res.json()
+  const headers = raw[0]
+  const values = raw[1]
+  const data: Record<string, string> = {}
+  headers.forEach((h, i) => { data[h] = values[i] })
+
+  return formatResult(data, countyName)
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const lat = searchParams.get('lat')
   const lng = searchParams.get('lng')
+  const city = searchParams.get('city')
   const state = searchParams.get('state')
 
   try {
-    // ── County-level lookup from coordinates ──────────────────────────────────
+    // ── Mode 1: city + state → geocode → county ACS ───────────────────────────
+    if (city && state) {
+      const address = encodeURIComponent(`${city}, ${state}`)
+      const geoRes = await fetch(
+        `${GOOGLE_GEOCODE_BASE}?address=${address}&key=${GOOGLE_KEY}`,
+        { next: { revalidate: 86400 } }
+      )
+      const geoJson = await geoRes.json()
+      const loc = geoJson?.results?.[0]?.geometry?.location
+      if (!loc) return NextResponse.json({ error: `Could not geocode city: ${city}, ${state}` }, { status: 404 })
+
+      const result = await coordsToCountyACS(String(loc.lat), String(loc.lng))
+      return NextResponse.json(result)
+    }
+
+    // ── Mode 2: lat/lng → county ACS (used by map) ────────────────────────────
     if (lat && lng) {
-      // Step 1: reverse-geocode coordinates → county FIPS
-      const geoUrl = `${GEOCODER_BASE}?x=${lng}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Vintages&layers=Counties&format=json`
-      const geoRes = await fetch(geoUrl, { next: { revalidate: 3600 } })
-      const geoData = await geoRes.json()
-
-      const county = geoData?.result?.geographies?.Counties?.[0]
-      if (!county) {
-        return NextResponse.json({ error: 'Could not find county for coordinates' }, { status: 404 })
-      }
-
-      const stateFips = county.STATE
-      const countyFips = county.COUNTY
-      const countyName = county.NAME // e.g. "Travis County"
-
-      // Step 2: fetch ACS data for that county
-      const url = `${CENSUS_BASE}?get=NAME,${VARIABLES}&for=county:${countyFips}&in=state:${stateFips}&key=${KEY}`
-      const res = await fetch(url, { next: { revalidate: 86400 } })
-      if (!res.ok) throw new Error(`Census API error: ${res.status}`)
-
-      const raw: string[][] = await res.json()
-      const headers = raw[0]
-      const values = raw[1]
-      const data: Record<string, string> = {}
-      headers.forEach((h, i) => { data[h] = values[i] })
-
-      return NextResponse.json(formatResult(data, countyName))
+      const result = await coordsToCountyACS(lat, lng)
+      return NextResponse.json(result)
     }
 
     // ── State-level fallback ──────────────────────────────────────────────────
