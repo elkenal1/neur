@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Census Bureau ACS 5-Year Estimates
-// Mode 1 — ?city=Austin&state=Texas  → Census geocoder (city name) → lat/lng → county FIPS → county ACS data
+// Mode 1 — ?city=Austin&state=Texas  → query ACS place-level data directly (no geocoding needed)
 // Mode 2 — ?lat=30.2&lng=-97.7       → county FIPS → county ACS data (used by map)
 // Mode 3 — ?state=Texas              → state-level ACS data (fallback)
-//
-// All geocoding uses the Census Bureau's own free geocoder — no Google API key needed server-side.
 //
 // Variables:
 //   B01003_001E — Total population
@@ -18,7 +16,6 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const CENSUS_BASE = 'https://api.census.gov/data/2022/acs/acs5'
 const GEOCODER_BASE = 'https://geocoding.geo.census.gov/geocoder/geographies/coordinates'
-const CENSUS_LOCATION_BASE = 'https://geocoding.geo.census.gov/geocoder/locations/onelineaddress'
 const KEY = process.env.CENSUS_API_KEY
 
 const STATE_FIPS: Record<string, string> = {
@@ -100,20 +97,42 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get('state')
 
   try {
-    // ── Mode 1: city + state → Census geocoder → county ACS ─────────────────
+    // ── Mode 1: city + state → ACS place-level data (no geocoding needed) ───
     if (city && state) {
-      const address = encodeURIComponent(`${city}, ${state}`)
-      const geoRes = await fetch(
-        `${CENSUS_LOCATION_BASE}?address=${address}&benchmark=Public_AR_Current&format=json`,
-        { next: { revalidate: 86400 } }
-      )
-      const geoJson = await geoRes.json()
-      const match = geoJson?.result?.addressMatches?.[0]
-      if (!match) return NextResponse.json({ error: `Could not geocode city: ${city}, ${state}` }, { status: 404 })
+      const fips = STATE_FIPS[state]
+      if (!fips) return NextResponse.json({ error: `Unknown state: ${state}` }, { status: 400 })
 
-      const { x: lng, y: lat } = match.coordinates
-      const result = await coordsToCountyACS(String(lat), String(lng))
-      return NextResponse.json(result)
+      // Fetch ACS data for all incorporated places in the state, then find the city
+      // Census NAME format: "Austin city, Texas" or "San Antonio city, Texas"
+      const url = `${CENSUS_BASE}?get=NAME,${VARIABLES}&for=place:*&in=state:${fips}&key=${KEY}`
+      const res = await fetch(url, { next: { revalidate: 86400 } })
+      if (!res.ok) throw new Error(`Census API error: ${res.status}`)
+
+      const raw: string[][] = await res.json()
+      const headers = raw[0]
+      const cityLower = city.toLowerCase()
+
+      // Match "Austin city, Texas" or "Austin town, Texas" etc.
+      const matchRow = raw.slice(1).find(row =>
+        row[0].toLowerCase().startsWith(cityLower + ' ')
+      )
+
+      if (!matchRow) {
+        // City not found as a Census place — fall back to state level
+        const stateUrl = `${CENSUS_BASE}?get=NAME,${VARIABLES}&for=state:${fips}&key=${KEY}`
+        const stateRes = await fetch(stateUrl, { next: { revalidate: 86400 } })
+        if (!stateRes.ok) throw new Error(`Census API error: ${stateRes.status}`)
+        const stateRaw: string[][] = await stateRes.json()
+        const stateHeaders = stateRaw[0]
+        const stateData: Record<string, string> = {}
+        stateHeaders.forEach((h, i) => { stateData[h] = stateRaw[1][i] })
+        return NextResponse.json(formatResult(stateData, state))
+      }
+
+      const data: Record<string, string> = {}
+      headers.forEach((h, i) => { data[h] = matchRow[i] })
+      // areaName: use "Austin, Texas" format
+      return NextResponse.json(formatResult(data, `${city}, ${state}`))
     }
 
     // ── Mode 2: lat/lng → county ACS (used by map) ────────────────────────────
