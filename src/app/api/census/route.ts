@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Census Bureau ACS 5-Year Estimates
-// Mode 1 — ?city=Austin&state=Texas  → geocode city → county FIPS → county ACS data
+// Mode 1 — ?city=Austin&state=Texas  → Census geocoder (city name) → lat/lng → county FIPS → county ACS data
 // Mode 2 — ?lat=30.2&lng=-97.7       → county FIPS → county ACS data (used by map)
 // Mode 3 — ?state=Texas              → state-level ACS data (fallback)
+//
+// All geocoding uses the Census Bureau's own free geocoder — no Google API key needed server-side.
 //
 // Variables:
 //   B01003_001E — Total population
@@ -16,9 +18,8 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const CENSUS_BASE = 'https://api.census.gov/data/2022/acs/acs5'
 const GEOCODER_BASE = 'https://geocoding.geo.census.gov/geocoder/geographies/coordinates'
-const GOOGLE_GEOCODE_BASE = 'https://maps.googleapis.com/maps/api/geocode/json'
+const CENSUS_LOCATION_BASE = 'https://geocoding.geo.census.gov/geocoder/locations/onelineaddress'
 const KEY = process.env.CENSUS_API_KEY
-const GOOGLE_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
 const STATE_FIPS: Record<string, string> = {
   'Alabama': '01', 'Alaska': '02', 'Arizona': '04', 'Arkansas': '05',
@@ -99,18 +100,19 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get('state')
 
   try {
-    // ── Mode 1: city + state → geocode → county ACS ───────────────────────────
+    // ── Mode 1: city + state → Census geocoder → county ACS ─────────────────
     if (city && state) {
       const address = encodeURIComponent(`${city}, ${state}`)
       const geoRes = await fetch(
-        `${GOOGLE_GEOCODE_BASE}?address=${address}&key=${GOOGLE_KEY}`,
+        `${CENSUS_LOCATION_BASE}?address=${address}&benchmark=Public_AR_Current&format=json`,
         { next: { revalidate: 86400 } }
       )
       const geoJson = await geoRes.json()
-      const loc = geoJson?.results?.[0]?.geometry?.location
-      if (!loc) return NextResponse.json({ error: `Could not geocode city: ${city}, ${state}` }, { status: 404 })
+      const match = geoJson?.result?.addressMatches?.[0]
+      if (!match) return NextResponse.json({ error: `Could not geocode city: ${city}, ${state}` }, { status: 404 })
 
-      const result = await coordsToCountyACS(String(loc.lat), String(loc.lng))
+      const { x: lng, y: lat } = match.coordinates
+      const result = await coordsToCountyACS(String(lat), String(lng))
       return NextResponse.json(result)
     }
 
