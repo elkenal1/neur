@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { redirect, notFound } from "next/navigation";
+import { calculateFeasibilityScore, type FeasibilityScore } from "@/lib/feasibility";
+
+export const dynamic = 'force-dynamic'
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -28,6 +31,13 @@ interface Analysis {
   customer_income_level: string;
   primary_goal: string;
   secondary_goals: string[];
+  // new fields
+  has_industry_experience: boolean;
+  current_industry: string;
+  commitment_level: string;
+  has_business_partners: boolean;
+  prior_business_ownership: string;
+  feasibility_score: FeasibilityScore | null;
 }
 
 interface CensusData {
@@ -86,6 +96,25 @@ async function fetchBLSData(industry: string): Promise<BLSData | null> {
   try {
     const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const res = await fetch(`${base}/api/bls?industry=${encodeURIComponent(industry)}`, { next: { revalidate: 86400 } });
+    return await res.json();
+  } catch { return null; }
+}
+
+async function fetchGeocode(city: string, state: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const res = await fetch(`${base}/api/geocode?address=${encodeURIComponent(`${city}, ${state}`)}`, { next: { revalidate: 86400 } });
+    const data = await res.json();
+    if (data.lat) return { lat: data.lat, lng: data.lng };
+    return null;
+  } catch { return null; }
+}
+
+async function fetchPlaces(lat: number, lng: number, industry: string): Promise<{ places: { id: string; name: string; rating: number | null; totalRatings: number; types: string[] }[] } | null> {
+  try {
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const radius = 8047; // 5 miles in meters
+    const res = await fetch(`${base}/api/places?lat=${lat}&lng=${lng}&radius=${radius}&industry=${encodeURIComponent(industry)}`, { next: { revalidate: 3600 } });
     return await res.json();
   } catch { return null; }
 }
@@ -190,10 +219,40 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const displayIndustry = a.industry_open_to_suggestions ? "Best Match (AI Suggested)" : a.industry_preference;
   const location = [a.preferred_city, a.preferred_state].filter(Boolean).join(", ") || "Remote / Online";
 
+  // Fetch census + BLS in parallel, then geocode + places if we have a city
   const [censusData, blsData] = await Promise.all([
     a.preferred_state ? fetchCensusData(a.preferred_state, a.preferred_city || undefined) : null,
     industry ? fetchBLSData(industry) : null,
   ]);
+
+  // Fetch competitor places if we have a city to geocode
+  let competitorPlaces: { id: string; name: string; rating: number | null; totalRatings: number; types: string[] }[] = [];
+  if (a.preferred_city && a.preferred_state && industry) {
+    const geo = await fetchGeocode(a.preferred_city, a.preferred_state);
+    if (geo) {
+      const placesData = await fetchPlaces(geo.lat, geo.lng, industry);
+      competitorPlaces = placesData?.places ?? [];
+    }
+  }
+
+  // Use cached feasibility score or calculate fresh
+  let feasibilityScore: FeasibilityScore | null = a.feasibility_score ?? null;
+  if (!feasibilityScore) {
+    feasibilityScore = calculateFeasibilityScore({
+      analysis: a,
+      blsData,
+      censusData,
+      competitorPlaces,
+      radiusMiles: 5,
+    });
+    // Save to DB so future loads use the cached version
+    await supabaseAdmin
+      .from('analyses')
+      .update({ feasibility_score: feasibilityScore })
+      .eq('id', a.id);
+  }
+
+  console.log('[Neur] Feasibility Score:', JSON.stringify(feasibilityScore, null, 2));
 
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
