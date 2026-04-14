@@ -60,42 +60,56 @@ const STATE_COORDS: Record<string, { lat: number; lng: number }> = {
   'Wyoming': { lat: 42.755966, lng: -107.302490 },
 }
 
-export default async function MapPage() {
+export default async function MapPage({ searchParams }: { searchParams: Promise<{ city?: string; state?: string; industry?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/sign-in')
 
-  // Get user's latest analysis for default location + industry
+  const params = await searchParams
+
   const { data: profile } = await supabaseAdmin
     .from('profiles')
     .select('plan')
     .eq('id', user.id)
     .single()
 
-  const { data: latestAnalysis } = await supabase
-    .from('analyses')
-    .select('preferred_state, preferred_city, industry_preference, industry_open_to_suggestions')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
+  // If no query params, fall back to latest analysis
+  let resolvedCity = params.city ?? null
+  let resolvedState = params.state ?? null
+  let resolvedIndustry = params.industry ?? null
+
+  if (!resolvedCity || !resolvedState) {
+    const { data: latestAnalysis } = await supabase
+      .from('analyses')
+      .select('preferred_state, preferred_city, industry_preference, industry_open_to_suggestions')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    resolvedCity = resolvedCity ?? latestAnalysis?.preferred_city ?? null
+    resolvedState = resolvedState ?? latestAnalysis?.preferred_state ?? 'Texas'
+    if (!resolvedIndustry) {
+      resolvedIndustry = latestAnalysis?.industry_open_to_suggestions
+        ? ''
+        : (latestAnalysis?.industry_preference ?? '')
+    }
+  }
 
   const isPaid = ['monthly', 'annual', 'consultant', 'admin'].includes(profile?.plan ?? '')
 
-  const state = latestAnalysis?.preferred_state ?? 'Texas'
-  const industry = latestAnalysis?.industry_open_to_suggestions
-    ? ''
-    : (latestAnalysis?.industry_preference ?? '')
+  const state = resolvedState ?? 'Texas'
+  const industry = resolvedIndustry ?? ''
 
-  // Get coordinates for the state/city
+  // Get coordinates for the city/state
   let lat = 31.054487
   let lng = -97.563461
 
-  if (latestAnalysis?.preferred_city && latestAnalysis?.preferred_state) {
+  if (resolvedCity && resolvedState) {
     try {
       const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
       const res = await fetch(
-        `${base}/api/geocode?address=${encodeURIComponent(`${latestAnalysis.preferred_city}, ${latestAnalysis.preferred_state}`)}`
+        `${base}/api/geocode?address=${encodeURIComponent(`${resolvedCity}, ${resolvedState}`)}`
       )
       const geo = await res.json()
       if (geo.lat) { lat = geo.lat; lng = geo.lng }

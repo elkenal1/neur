@@ -1,9 +1,11 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { redirect, notFound } from "next/navigation";
 import { calculateFeasibilityScore, type FeasibilityScore } from "@/lib/feasibility";
-
-export const dynamic = 'force-dynamic'
+import { fetchCensusData, fetchBLSData, fetchGeocode, fetchPlaces, type PlaceResult } from "@/lib/api";
+import FeasibilitySection from "@/components/reports/FeasibilitySection";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -40,29 +42,6 @@ interface Analysis {
   feasibility_score: FeasibilityScore | null;
 }
 
-interface CensusData {
-  areaName: string;
-  population: string;
-  medianHouseholdIncome: string;
-  medianAge: string;
-  unemploymentRate: string;
-  medianRent: string;
-  bachelorsDegreeCount: string;
-  error?: string;
-}
-
-interface BLSData {
-  industry: string;
-  sectorLabel: string;
-  latestEmployment: string;
-  employmentTrend: string;
-  nationalUnemploymentRate: string;
-  avgHourlyEarnings: string;
-  avgWeeklyHours: string;
-  employmentHistory: { period: string; value: number }[];
-  error?: string;
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const BUDGET_LABELS: Record<string, string> = {
@@ -80,44 +59,6 @@ const GOAL_LABELS: Record<string, string> = {
   build_and_sell: "Build & Sell",
   passive_income: "Passive Income",
 };
-
-async function fetchCensusData(state: string, city?: string): Promise<CensusData | null> {
-  try {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const url = city
-      ? `${base}/api/census?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`
-      : `${base}/api/census?state=${encodeURIComponent(state)}`;
-    const res = await fetch(url, { next: { revalidate: 86400 } });
-    return await res.json();
-  } catch { return null; }
-}
-
-async function fetchBLSData(industry: string): Promise<BLSData | null> {
-  try {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const res = await fetch(`${base}/api/bls?industry=${encodeURIComponent(industry)}`, { next: { revalidate: 86400 } });
-    return await res.json();
-  } catch { return null; }
-}
-
-async function fetchGeocode(city: string, state: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const res = await fetch(`${base}/api/geocode?address=${encodeURIComponent(`${city}, ${state}`)}`, { next: { revalidate: 86400 } });
-    const data = await res.json();
-    if (data.lat) return { lat: data.lat, lng: data.lng };
-    return null;
-  } catch { return null; }
-}
-
-async function fetchPlaces(lat: number, lng: number, industry: string): Promise<{ places: { id: string; name: string; rating: number | null; totalRatings: number; types: string[] }[] } | null> {
-  try {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const radius = 8047; // 5 miles in meters
-    const res = await fetch(`${base}/api/places?lat=${lat}&lng=${lng}&radius=${radius}&industry=${encodeURIComponent(industry)}`, { next: { revalidate: 3600 } });
-    return await res.json();
-  } catch { return null; }
-}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -226,7 +167,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   ]);
 
   // Fetch competitor places if we have a city to geocode
-  let competitorPlaces: { id: string; name: string; rating: number | null; totalRatings: number; types: string[] }[] = [];
+  let competitorPlaces: PlaceResult[] = [];
   if (a.preferred_city && a.preferred_state && industry) {
     const geo = await fetchGeocode(a.preferred_city, a.preferred_state);
     if (geo) {
@@ -251,8 +192,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       .update({ feasibility_score: feasibilityScore })
       .eq('id', a.id);
   }
-
-  console.log('[Neur] Feasibility Score:', JSON.stringify(feasibilityScore, null, 2));
 
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
@@ -315,6 +254,15 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             )}
           </div>
         </div>
+
+        {/* Feasibility Score — first thing after the header */}
+        {feasibilityScore && (
+          <FeasibilitySection
+            score={feasibilityScore}
+            isPaid={isPaid}
+            analysisId={a.id}
+          />
+        )}
 
         {/* FREE: Teaser — 1 BLS stat */}
         <DataSection icon={TrendingUp} title="Industry Snapshot" badge="BLS Data">
@@ -420,15 +368,26 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         ) : (
           <>
             {/* PAID: Competition Map */}
-            <DataSection icon={MapPin} title="Competition Map" badge="Google Maps + Yelp">
-              <div className="bg-[var(--color-muted)] rounded-xl h-52 flex items-center justify-center text-[var(--color-slate)] text-sm">
-                <div className="text-center">
-                  <MapPin size={32} className="mx-auto mb-2 opacity-30" />
-                  <p className="font-medium">Interactive map with radius tool — coming next</p>
-                  <p className="text-xs mt-1 opacity-70">NAICS codes, competitor pins, foot traffic, demographics by radius</p>
+            <DataSection icon={MapPin} title="Competition Map" badge="Google Maps">
+              <div className="bg-[var(--color-muted)] rounded-2xl overflow-hidden">
+                <div className="px-6 py-8 flex flex-col sm:flex-row items-center gap-6">
+                  <div className="bg-[var(--color-navy)] text-white rounded-2xl p-5 shrink-0">
+                    <MapPin size={32} />
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <h4 className="font-bold text-[var(--color-navy)] text-base mb-1">Explore Competitors on the Map</h4>
+                    <p className="text-sm text-[var(--color-slate)] max-w-sm">
+                      See nearby competitors, adjust your radius, and view live demographics for any location in {a.preferred_city ?? a.preferred_state ?? 'your area'}.
+                    </p>
+                    <Link
+                      href={`/dashboard/map?city=${encodeURIComponent(a.preferred_city ?? '')}&state=${encodeURIComponent(a.preferred_state ?? '')}&industry=${encodeURIComponent(industry)}`}
+                      className="inline-flex items-center gap-2 mt-4 bg-[var(--color-navy)] text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[var(--color-navy-light)] transition-colors"
+                    >
+                      <MapPin size={14} /> Open Interactive Map
+                    </Link>
+                  </div>
                 </div>
               </div>
-              <PendingData source="Google Maps API + Yelp Fusion" />
             </DataSection>
 
             {/* PAID: Labor Market */}

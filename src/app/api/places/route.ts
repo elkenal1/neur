@@ -36,6 +36,31 @@ const INDUSTRY_TO_PLACE_TYPES: Record<string, string[]> = {
 
 const DEFAULT_TYPES = ['store', 'establishment']
 
+// Industry keywords broaden the search beyond a single place type,
+// catching businesses Google doesn't neatly categorize under one type.
+const INDUSTRY_KEYWORDS: Record<string, string> = {
+  'Food & Beverage':        'restaurant cafe bar',
+  'Retail':                 'retail store shop',
+  'Health & Wellness':      'health wellness clinic',
+  'Fitness':                'gym fitness studio',
+  'Beauty & Personal Care': 'salon spa beauty',
+  'Education & Tutoring':   'school tutoring education',
+  'Childcare':              'daycare childcare preschool',
+  'Technology':             'tech software IT',
+  'Automotive':             'auto car automotive dealer repair',
+  'Real Estate':            'real estate realty',
+  'Finance':                'finance bank insurance',
+  'Professional Services':  'consulting law accounting',
+  'Home Services':          'plumber electrician handyman',
+  'Construction':           'construction contractor builder',
+  'Hospitality':            'hotel motel lodging',
+  'Entertainment':          'entertainment venue theater',
+  'Transportation':         'moving taxi logistics',
+  'Agriculture':            'farm nursery garden',
+  'Manufacturing':          'manufacturing fabrication',
+  'E-commerce':             'ecommerce fulfillment warehouse',
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const lat = searchParams.get('lat')
@@ -48,13 +73,14 @@ export async function GET(request: NextRequest) {
   }
 
   const types = INDUSTRY_TO_PLACE_TYPES[industry] ?? DEFAULT_TYPES
-  // Use the first type for the initial search (Places API takes one type at a time)
   const type = types[0]
+  const keyword = INDUSTRY_KEYWORDS[industry] ?? industry
 
   const url = new URL(PLACES_BASE)
   url.searchParams.set('location', `${lat},${lng}`)
   url.searchParams.set('radius', radius)
   url.searchParams.set('type', type)
+  url.searchParams.set('keyword', keyword)
   url.searchParams.set('key', KEY!)
 
   try {

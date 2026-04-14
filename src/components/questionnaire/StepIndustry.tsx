@@ -35,7 +35,7 @@ export default function StepIndustry({ data, onChange }: Props) {
             : "border-[var(--color-border)] text-[var(--color-slate)] hover:border-[var(--color-gold)]"
         }`}
       >
-        ✨ Help me find the right industry
+        🎯 Help me find the right industry
       </button>
 
       {!openToSuggestions && (

@@ -66,13 +66,13 @@ function formatResult(data: Record<string, string>, areaName: string) {
   }
 }
 
-async function coordsToCountyACS(lat: string, lng: string) {
+async function coordsToCountyACS(lat: string, lng: string): Promise<ReturnType<typeof formatResult> | null> {
   const geoUrl = `${GEOCODER_BASE}?x=${lng}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Vintages&layers=Counties&format=json`
   const geoRes = await fetch(geoUrl, { next: { revalidate: 3600 } })
   const geoData = await geoRes.json()
 
   const county = geoData?.result?.geographies?.Counties?.[0]
-  if (!county) throw new Error('Could not find county for coordinates')
+  if (!county) return null
 
   const stateFips = county.STATE
   const countyFips = county.COUNTY
@@ -140,6 +140,7 @@ export async function GET(request: NextRequest) {
     // ── Mode 2: lat/lng → county ACS (used by map) ────────────────────────────
     if (lat && lng) {
       const result = await coordsToCountyACS(lat, lng)
+      if (!result) return NextResponse.json({ error: 'County not found for these coordinates' }, { status: 404 })
       return NextResponse.json(result)
     }
 
