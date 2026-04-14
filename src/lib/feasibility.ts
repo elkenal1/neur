@@ -141,10 +141,25 @@ const BUDGET_VALUES: Record<string, number> = {
 }
 
 const COMPLEMENTARY_TYPES: Record<string, string[]> = {
-  'Food & Beverage':        ['shopping_mall', 'park', 'gym'],
-  'Fitness':                ['health', 'pharmacy', 'grocery_or_supermarket'],
-  'Retail':                 ['shopping_mall', 'parking', 'transit_station'],
-  'Beauty & Personal Care': ['gym', 'shopping_mall', 'spa'],
+  'Food & Beverage':        ['restaurant', 'cafe', 'bar', 'shopping_mall', 'park', 'gym', 'office'],
+  'Retail':                 ['store', 'shopping_mall', 'clothing_store', 'shoe_store', 'home_goods_store', 'parking', 'transit_station'],
+  'Fitness':                ['gym', 'health', 'spa', 'pharmacy', 'grocery_or_supermarket', 'park'],
+  'Beauty & Personal Care': ['hair_care', 'spa', 'gym', 'shopping_mall', 'nail_salon'],
+  'Health & Wellness':      ['pharmacy', 'hospital', 'doctor', 'gym', 'spa', 'health'],
+  'Education & Tutoring':   ['school', 'library', 'university', 'book_store', 'park'],
+  'Home Services':          ['hardware_store', 'home_goods_store', 'real_estate_agency', 'moving_company'],
+  'Childcare':              ['school', 'park', 'grocery_or_supermarket', 'pharmacy'],
+  'Real Estate':            ['bank', 'home_goods_store', 'moving_company'],
+  'Professional Services':  ['bank', 'accounting', 'insurance_agency'],
+  'Technology':             ['university', 'electronics_store', 'bank'],
+  'Construction':           ['hardware_store', 'home_goods_store', 'real_estate_agency'],
+  'Transportation':         ['gas_station', 'parking', 'car_repair', 'car_dealer'],
+  'Automotive':             ['gas_station', 'car_repair', 'parking', 'car_wash', 'car_dealer'],
+  'Finance':                ['bank', 'accounting', 'insurance_agency'],
+  'Hospitality':            ['hotel', 'restaurant', 'bar', 'tourist_attraction', 'travel_agency'],
+  'Entertainment':          ['movie_theater', 'restaurant', 'bar', 'shopping_mall', 'park'],
+  'Agriculture':            ['hardware_store', 'storage', 'gas_station'],
+  'Manufacturing':          ['storage', 'hardware_store', 'gas_station'],
 }
 const DEFAULT_COMPLEMENTARY = ['bank', 'pharmacy', 'grocery_or_supermarket']
 
@@ -293,10 +308,10 @@ function scoreLocation(
 ): Omit<PillarResult, 'weighted_score'> {
   const highlights: string[] = []
 
-  if (operation_type === 'online') {
+  if (operation_type === 'online' || industry === 'E-commerce') {
     return {
       score: 14,
-      highlights: ['As an online business, your location viability score reflects market access rather than physical factors'],
+      highlights: ['Online businesses benefit from digital traffic rather than physical proximity — your location does not limit your market reach'],
       insight: 'Your online model gives you geographic flexibility — focus on digital market reach and online customer acquisition.',
     }
   }
@@ -320,7 +335,9 @@ function scoreLocation(
   if (compCount >= 3) score += 8
   else if (compCount >= 1) score += 4
   highlights.push(
-    `${compCount} complementary businesses found nearby that could drive foot traffic to your location`
+    compCount > 0
+      ? `${compCount} complementary businesses found nearby that could drive foot traffic to your location`
+      : `No complementary businesses detected nearby — consider scouting locations with more foot traffic generators`
   )
 
   // 3. Median household income — location context (0–6)

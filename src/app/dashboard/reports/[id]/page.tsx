@@ -10,7 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowLeft, TrendingUp, MapPin, Users, DollarSign,
-  BarChart2, Lightbulb, FileText, CheckCircle, Clock,
+  BarChart2, FileText, CheckCircle, Clock,
   AlertCircle, Lock
 } from "lucide-react";
 
@@ -404,38 +404,38 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             <DataSection icon={DollarSign} title="Financing Options" badge="SBA">
               <div className="space-y-2">
                 {[
-                  { name: "SBA 7(a) Loan", desc: "Up to $5M — general business purposes", badge: "Best Match" },
-                  { name: "SBA Microloan", desc: "Up to $50,000 — ideal for startups", badge: "" },
-                  { name: "USDA Business Loan", desc: "Rural area financing", badge: "" },
-                ].map(({ name, desc, badge }) => (
-                  <div key={name} className="flex items-center justify-between px-4 py-3 bg-[var(--color-muted)] rounded-xl">
+                  {
+                    name: "SBA 7(a) Loan",
+                    desc: "Up to $5M — general business purposes",
+                    note: "Best for businesses needing working capital, equipment, or expansion funding",
+                    badge: "Best Match",
+                    show: true,
+                  },
+                  {
+                    name: "SBA Microloan",
+                    desc: "Up to $50,000 — ideal for startups",
+                    note: "Best for first-time business owners with limited credit history or small capital needs",
+                    badge: "",
+                    show: true,
+                  },
+                  {
+                    name: "USDA Business Loan",
+                    desc: "Rural area financing",
+                    note: "Best for businesses in rural areas or agriculture-related industries",
+                    badge: "",
+                    show: !a.preferred_city || a.industry_preference === "Agriculture",
+                  },
+                ].filter(o => o.show).map(({ name, desc, note, badge }) => (
+                  <div key={name} className="flex items-start justify-between px-4 py-3 bg-[var(--color-muted)] rounded-xl gap-3">
                     <div>
                       <div className="text-sm font-semibold text-[var(--color-navy)]">{name}</div>
                       <div className="text-xs text-[var(--color-slate)]">{desc}</div>
+                      <div className="text-xs text-[var(--color-slate)] mt-1 italic">{note}</div>
                     </div>
                     {badge && <span className="text-xs font-bold bg-[var(--color-emerald)] text-white px-2.5 py-1 rounded-full shrink-0">{badge}</span>}
                   </div>
                 ))}
                 <PendingData source="SBA.gov API" />
-              </div>
-            </DataSection>
-
-            {/* PAID: Next Steps */}
-            <DataSection icon={Lightbulb} title="Recommended Next Steps">
-              <div className="space-y-2">
-                {[
-                  "Validate your concept by talking to 10 potential customers in your target area",
-                  "Register your business entity (LLC recommended) with your state",
-                  "Research local zoning laws for your business type",
-                  "Apply for an EIN with the IRS — free and instant at irs.gov",
-                  "Open a dedicated business bank account",
-                  "Book a Neur advisor consultation for a personalized strategy session",
-                ].map((step, i) => (
-                  <div key={i} className="flex items-start gap-3 px-4 py-3 bg-[var(--color-muted)] rounded-xl">
-                    <div className="w-5 h-5 rounded-full bg-[var(--color-navy)] text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">{i + 1}</div>
-                    <p className="text-sm text-[var(--color-foreground)]">{step}</p>
-                  </div>
-                ))}
               </div>
             </DataSection>
           </>

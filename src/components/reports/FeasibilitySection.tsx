@@ -164,7 +164,7 @@ export default function FeasibilitySection({
             <h3 className="font-bold text-[var(--color-navy)]">Feasibility Score</h3>
           </div>
           <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">
-            AI Analysis
+            Data Analysis
           </span>
         </div>
 
@@ -270,6 +270,18 @@ export default function FeasibilitySection({
                   />
                 </div>
               ))}
+              {/* Advisor consultation — coming soon, easy to remove */}
+              <div className="flex items-start gap-3 px-4 py-3 bg-[var(--color-muted)] rounded-xl opacity-60">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs text-white bg-[var(--color-slate)]">
+                  {score.next_steps.length + 1}
+                </div>
+                <p className="flex-1 text-sm text-[var(--color-slate)] italic">
+                  Book a Neur advisor consultation for a personalized strategy session{' '}
+                  <span className="not-italic text-[10px] font-semibold bg-[var(--color-border)] text-[var(--color-slate)] px-1.5 py-0.5 rounded ml-1">
+                    Coming Soon
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
         </>
