@@ -5,7 +5,9 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { redirect, notFound } from "next/navigation";
 import { calculateFeasibilityScore, type FeasibilityScore } from "@/lib/feasibility";
 import { fetchCensusData, fetchBLSData, fetchGeocode, fetchPlaces, type PlaceResult } from "@/lib/api";
+import { findComparableCities } from "@/lib/comparableCities";
 import FeasibilitySection from "@/components/reports/FeasibilitySection";
+import ComparableCitiesSection from "@/components/reports/ComparableCitiesSection";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -193,6 +195,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       .eq('id', a.id);
   }
 
+  // Comparable cities — only for paid users with a city + census data
+  const comparableCities = (isPaid && censusData && !censusData.error && a.preferred_city && a.preferred_state)
+    ? await findComparableCities(censusData, a.preferred_city, a.preferred_state)
+    : null;
+
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
 
@@ -261,6 +268,14 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             score={feasibilityScore}
             isPaid={isPaid}
             analysisId={a.id}
+          />
+        )}
+
+        {/* Comparable Cities — paid only, requires census data */}
+        {isPaid && comparableCities && comparableCities.length >= 3 && (
+          <ComparableCitiesSection
+            cities={comparableCities}
+            industry={industry}
           />
         )}
 
