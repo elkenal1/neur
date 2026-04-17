@@ -478,13 +478,24 @@ async function main() {
     console.log(`\nFetching ACS data for ${state} (${stateCities.length} cities)...`)
 
     try {
-      // One Census API call per state — fetch all places
+      // One Census API call per state — fetch all places (retry up to 3x on failure)
       const url = `${CENSUS_BASE}?get=NAME,${VARIABLES}&for=place:*&in=state:${fips}&key=${CENSUS_KEY}`
-      const res = await fetch(url)
+      let res: Response | null = null
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          res = await fetch(url)
+          if (res.ok) break
+          console.warn(`  Attempt ${attempt} failed for ${state}: ${res.status} — waiting ${attempt * 2}s...`)
+          await sleep(attempt * 2000)
+        } catch (fetchErr) {
+          console.warn(`  Attempt ${attempt} fetch error for ${state} — waiting ${attempt * 2}s...`)
+          await sleep(attempt * 2000)
+        }
+      }
 
-      if (!res.ok) {
-        console.error(`  Census API error for ${state}: ${res.status}`)
-        await sleep(500)
+      if (!res || !res.ok) {
+        console.error(`  Skipping ${state} after 3 failed attempts`)
+        await sleep(1000)
         continue
       }
 
