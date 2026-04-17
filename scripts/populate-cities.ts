@@ -528,7 +528,9 @@ async function main() {
         }
 
         const population = parseInt(data['B01003_001E']) || null
-        const income = parseInt(data['B19013_001E']) || null
+        const rawIncome = parseInt(data['B19013_001E'])
+        // Census uses large negative sentinel values (e.g. -666666666) for missing data
+        const income = rawIncome > 0 ? rawIncome : null
         const age = parseFloat(data['B01002_001E']) || null
         const employed = parseInt(data['B23025_004E']) || 0
         const unemployed = parseInt(data['B23025_005E']) || 0
