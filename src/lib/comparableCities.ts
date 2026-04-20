@@ -14,8 +14,13 @@ export interface ComparableCity {
   median_household_income: number | null
   median_age: number | null
   unemployment_rate: number | null
+  median_rent: number | null
   bachelor_degree_pct: number | null
   renter_pct: number | null
+  hispanic_pct: number | null
+  white_pct: number | null
+  black_pct: number | null
+  asian_pct: number | null
   latitude: number | null
   longitude: number | null
   shared_facts: string[]
@@ -121,7 +126,7 @@ export async function findComparableCities(
   // Fetch all cities from Supabase (excluding user's own city)
   const { data: cities, error } = await supabaseAdmin
     .from('cities')
-    .select('city, state, state_abbr, population, median_household_income, median_age, unemployment_rate, bachelor_degree_pct, renter_pct, latitude, longitude')
+    .select('city, state, state_abbr, population, median_household_income, median_age, unemployment_rate, median_rent, bachelor_degree_pct, renter_pct, hispanic_pct, white_pct, black_pct, asian_pct, latitude, longitude')
     .not('median_household_income', 'is', null)
     .not('median_age', 'is', null)
     .not('unemployment_rate', 'is', null)
@@ -187,8 +192,13 @@ export async function findComparableCities(
       median_household_income: c.median_household_income,
       median_age: c.median_age,
       unemployment_rate: c.unemployment_rate,
+      median_rent: c.median_rent,
       bachelor_degree_pct: c.bachelor_degree_pct,
       renter_pct: c.renter_pct,
+      hispanic_pct: c.hispanic_pct,
+      white_pct: c.white_pct,
+      black_pct: c.black_pct,
+      asian_pct: c.asian_pct,
       latitude: c.latitude,
       longitude: c.longitude,
       shared_facts: [],

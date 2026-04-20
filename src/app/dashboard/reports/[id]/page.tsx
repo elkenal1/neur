@@ -272,10 +272,24 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         )}
 
         {/* Comparable Cities — paid only, requires census data */}
-        {isPaid && comparableCities && comparableCities.length >= 3 && (
+        {isPaid && comparableCities && comparableCities.length >= 3 && censusData && (
           <ComparableCitiesSection
             cities={comparableCities}
             industry={industry}
+            userCity={{
+              name: a.preferred_city,
+              median_household_income: (() => { const n = parseFloat((censusData.medianHouseholdIncome ?? '').replace(/[^0-9.]/g, '')); return isNaN(n) || n <= 0 ? null : n })(),
+              median_age:              (() => { const n = parseFloat((censusData.medianAge ?? '').replace(/[^0-9.]/g, ''));              return isNaN(n) || n <= 0 ? null : n })(),
+              unemployment_rate:       (() => { const n = parseFloat((censusData.unemploymentRate ?? '').replace(/[^0-9.]/g, ''));       return isNaN(n) || n <= 0 ? null : n })(),
+              median_rent:             (() => { const n = parseFloat((censusData.medianRent ?? '').replace(/[^0-9.]/g, ''));             return isNaN(n) || n <= 0 ? null : n })(),
+              bachelor_degree_pct:     (() => {
+                const bachelors = parseFloat((censusData.bachelorsDegreeCount ?? '').replace(/[^0-9.]/g, ''))
+                const pop       = parseFloat((censusData.population ?? '').replace(/[^0-9.]/g, ''))
+                if (isNaN(bachelors) || isNaN(pop) || pop <= 0) return null
+                return parseFloat(((bachelors / pop) * 100).toFixed(2))
+              })(),
+              renter_pct: null,
+            }}
           />
         )}
 
