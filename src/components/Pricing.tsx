@@ -1,74 +1,220 @@
-import Link from "next/link";
-import { Check } from "lucide-react";
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { Check } from 'lucide-react'
+import { createClient } from '@/lib/supabase-browser'
+
+type UserPlan = 'free' | 'monthly' | 'annual' | 'consultant' | 'admin' | null
 
 const plans = [
   {
-    name: "One-Time",
+    key: 'consultation',
+    name: 'One-Time',
     price: null,
-    label: "From $99",
-    description: "A single in-depth consultation with a personalized report.",
+    label: 'From $99',
+    description: 'A single in-depth consultation with a personalized report.',
     features: [
-      "Full intake questionnaire",
-      "Business & location analysis",
-      "Interactive dashboard access",
-      "Downloadable PDF report",
-      "Human review included",
+      'Full intake questionnaire',
+      'Business & location analysis',
+      'Interactive dashboard access',
+      'Downloadable PDF report',
+      'Human review included',
     ],
-    cta: "Book a Consultation",
-    href: "/sign-up?plan=consultation",
+    cta: 'Book a Consultation',
+    href: '/sign-up?plan=consultation',
     highlight: false,
+    stripePlan: null as null,
   },
   {
-    name: "Monthly",
-    price: "$20",
-    label: "per month",
-    description: "Full platform access — browse, analyze, and plan on your schedule.",
+    key: 'monthly',
+    name: 'Monthly',
+    price: '$20',
+    label: 'per month',
+    description: 'Full platform access — browse, analyze, and plan on your schedule.',
     features: [
-      "Unlimited location browsing",
-      "Live US market data",
-      "Industry trend insights",
-      "Financing options hub",
-      "Business launch guides",
-      "Downloadable PDF reports",
+      'Unlimited location browsing',
+      'Live US market data',
+      'Industry trend insights',
+      'Financing options hub',
+      'Business launch guides',
+      'Downloadable PDF reports',
     ],
-    cta: "Get Started",
-    href: "/sign-up?plan=monthly",
+    cta: 'Get Started',
+    href: '/sign-up?plan=monthly',
     highlight: true,
+    stripePlan: 'monthly' as const,
   },
   {
-    name: "Annual",
-    price: "$200",
-    label: "per year",
-    description: "Everything in Monthly — save 2 months free.",
+    key: 'annual',
+    name: 'Annual',
+    price: '$200',
+    label: 'per year',
+    description: 'Everything in Monthly — save 2 months free.',
     features: [
-      "Everything in Monthly",
-      "2 months free",
-      "Priority support",
-      "Early access to new features",
+      'Everything in Monthly',
+      '2 months free',
+      'Priority support',
+      'Early access to new features',
     ],
-    cta: "Get Started",
-    href: "/sign-up?plan=annual",
+    cta: 'Get Started',
+    href: '/sign-up?plan=annual',
     highlight: false,
+    stripePlan: 'annual' as const,
   },
   {
-    name: "Consultant",
+    key: 'consultant',
+    name: 'Consultant',
     price: null,
-    label: "Enterprise",
-    description: "A dedicated Neur portal for independent consultants to use with clients.",
+    label: 'Enterprise',
+    description: 'A dedicated Neur portal for independent consultants to use with clients.',
     features: [
-      "Branded consultant portal",
-      "Multi-client management",
-      "Client report generation",
-      "White-label PDF reports",
-      "Priority support",
+      'Branded consultant portal',
+      'Multi-client management',
+      'Client report generation',
+      'White-label PDF reports',
+      'Priority support',
     ],
-    cta: "Contact Us",
-    href: "/contact?plan=consultant",
+    cta: 'Contact Us',
+    href: '/contact?plan=consultant',
     highlight: false,
+    stripePlan: null as null,
   },
-];
+]
 
 export default function Pricing() {
+  const [userPlan, setUserPlan] = useState<UserPlan>(null)
+  const [userId, setUserId]     = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [upgrading, setUpgrading] = useState<string | null>(null)
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    async function loadUser() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setLoaded(true); return }
+
+      setUserId(user.id)
+      setUserEmail(user.email ?? null)
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .single()
+
+      setUserPlan((profile?.plan as UserPlan) ?? 'free')
+      setLoaded(true)
+    }
+    loadUser()
+  }, [])
+
+  async function handleUpgrade(plan: 'monthly' | 'annual') {
+    if (!userId || !userEmail) {
+      window.location.href = `/sign-up?plan=${plan}`
+      return
+    }
+    setUpgrading(plan)
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan, userId, email: userEmail }),
+      })
+      const json = await res.json()
+      if (json.url) {
+        window.location.href = json.url
+      }
+    } catch {
+      setUpgrading(null)
+    }
+  }
+
+  function renderButton(plan: typeof plans[number]) {
+    const isPaidPlan = plan.stripePlan === 'monthly' || plan.stripePlan === 'annual'
+
+    // Not a paid plan (One-Time / Consultant) — always a link
+    if (!isPaidPlan) {
+      return (
+        <Link
+          href={plan.href}
+          className={`text-center text-sm font-bold px-4 py-3 rounded-xl transition-colors ${
+            plan.highlight
+              ? 'bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-light)]'
+              : 'bg-[var(--color-navy)] text-white hover:bg-[var(--color-navy-light)]'
+          }`}
+        >
+          {plan.cta}
+        </Link>
+      )
+    }
+
+    // Still loading auth state — show neutral button
+    if (!loaded) {
+      return (
+        <div className={`text-center text-sm font-bold px-4 py-3 rounded-xl opacity-50 ${
+          plan.highlight
+            ? 'bg-[var(--color-gold)] text-[var(--color-navy)]'
+            : 'bg-[var(--color-navy)] text-white'
+        }`}>
+          {plan.cta}
+        </div>
+      )
+    }
+
+    // Signed out — link to sign-up
+    if (!userPlan) {
+      return (
+        <Link
+          href={plan.href}
+          className={`text-center text-sm font-bold px-4 py-3 rounded-xl transition-colors ${
+            plan.highlight
+              ? 'bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-light)]'
+              : 'bg-[var(--color-navy)] text-white hover:bg-[var(--color-navy-light)]'
+          }`}
+        >
+          {plan.cta}
+        </Link>
+      )
+    }
+
+    // User is on this plan — show badge
+    const isCurrentPlan =
+      userPlan === plan.stripePlan ||
+      (plan.stripePlan === 'monthly' && userPlan === 'monthly') ||
+      (plan.stripePlan === 'annual' && userPlan === 'annual') ||
+      userPlan === 'consultant' ||
+      userPlan === 'admin'
+
+    if (isCurrentPlan) {
+      return (
+        <div className={`text-center text-sm font-bold px-4 py-3 rounded-xl ${
+          plan.highlight
+            ? 'bg-white/20 text-white'
+            : 'bg-[var(--color-muted)] text-[var(--color-navy)]'
+        }`}>
+          ✓ Current Plan
+        </div>
+      )
+    }
+
+    // Free user — show upgrade button
+    return (
+      <button
+        onClick={() => handleUpgrade(plan.stripePlan!)}
+        disabled={upgrading === plan.stripePlan}
+        className={`w-full text-center text-sm font-bold px-4 py-3 rounded-xl transition-colors disabled:opacity-60 ${
+          plan.highlight
+            ? 'bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-light)]'
+            : 'bg-[var(--color-navy)] text-white hover:bg-[var(--color-navy-light)]'
+        }`}
+      >
+        {upgrading === plan.stripePlan ? 'Redirecting...' : 'Upgrade Now'}
+      </button>
+    )
+  }
+
   return (
     <section id="pricing" className="py-24 px-6 bg-[var(--color-muted)]">
       <div className="max-w-6xl mx-auto">
@@ -87,8 +233,8 @@ export default function Pricing() {
               key={plan.name}
               className={`rounded-2xl p-6 flex flex-col border ${
                 plan.highlight
-                  ? "bg-[var(--color-navy)] text-white border-[var(--color-navy)] shadow-xl scale-105"
-                  : "bg-white text-[var(--color-foreground)] border-[var(--color-border)] shadow-sm"
+                  ? 'bg-[var(--color-navy)] text-white border-[var(--color-navy)] shadow-xl scale-105'
+                  : 'bg-white text-[var(--color-foreground)] border-[var(--color-border)] shadow-sm'
               }`}
             >
               {plan.highlight && (
@@ -97,47 +243,38 @@ export default function Pricing() {
                 </div>
               )}
               <div className="mb-4">
-                <h3 className={`text-lg font-bold ${plan.highlight ? "text-white" : "text-[var(--color-navy)]"}`}>
+                <h3 className={`text-lg font-bold ${plan.highlight ? 'text-white' : 'text-[var(--color-navy)]'}`}>
                   {plan.name}
                 </h3>
-                <div className={`mt-1 text-3xl font-extrabold ${plan.highlight ? "text-[var(--color-gold)]" : "text-[var(--color-navy)]"}`}>
+                <div className={`mt-1 text-3xl font-extrabold ${plan.highlight ? 'text-[var(--color-gold)]' : 'text-[var(--color-navy)]'}`}>
                   {plan.price ?? plan.label}
                 </div>
                 {plan.price && (
-                  <div className={`text-xs mt-0.5 ${plan.highlight ? "text-white/60" : "text-[var(--color-slate)]"}`}>
+                  <div className={`text-xs mt-0.5 ${plan.highlight ? 'text-white/60' : 'text-[var(--color-slate)]'}`}>
                     {plan.label}
                   </div>
                 )}
               </div>
 
-              <p className={`text-sm mb-5 leading-relaxed ${plan.highlight ? "text-white/70" : "text-[var(--color-slate)]"}`}>
+              <p className={`text-sm mb-5 leading-relaxed ${plan.highlight ? 'text-white/70' : 'text-[var(--color-slate)]'}`}>
                 {plan.description}
               </p>
 
               <ul className="flex-1 space-y-2 mb-6">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm">
-                    <Check size={15} className={`mt-0.5 shrink-0 ${plan.highlight ? "text-[var(--color-gold)]" : "text-[var(--color-emerald)]"}`} />
-                    <span className={plan.highlight ? "text-white/80" : "text-[var(--color-slate)]"}>{f}</span>
+                    <Check size={15} className={`mt-0.5 shrink-0 ${plan.highlight ? 'text-[var(--color-gold)]' : 'text-[var(--color-emerald)]'}`} />
+                    <span className={plan.highlight ? 'text-white/80' : 'text-[var(--color-slate)]'}>{f}</span>
                   </li>
                 ))}
               </ul>
 
-              <Link
-                href={plan.href}
-                className={`text-center text-sm font-bold px-4 py-3 rounded-xl transition-colors ${
-                  plan.highlight
-                    ? "bg-[var(--color-gold)] text-[var(--color-navy)] hover:bg-[var(--color-gold-light)]"
-                    : "bg-[var(--color-navy)] text-white hover:bg-[var(--color-navy-light)]"
-                }`}
-              >
-                {plan.cta}
-              </Link>
+              {renderButton(plan)}
             </div>
           ))}
         </div>
 
       </div>
     </section>
-  );
+  )
 }
