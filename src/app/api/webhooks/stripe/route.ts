@@ -5,6 +5,45 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
+// Retries a profile update 3×, waiting for the row to exist if needed
+async function updateProfileWithRetry(
+  userId: string,
+  updates: Record<string, unknown>,
+  maxAttempts = 3,
+): Promise<void> {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const { data: existing } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .single()
+
+    if (!existing) {
+      if (attempt < maxAttempts) {
+        console.warn(`[webhook] Profile not found for user ${userId} (attempt ${attempt}/${maxAttempts}), retrying...`)
+        await new Promise(r => setTimeout(r, 1000 * attempt))
+        continue
+      }
+      console.error(`[webhook] Profile never found for user ${userId} after ${maxAttempts} attempts`)
+      return
+    }
+
+    const { error } = await supabaseAdmin
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId)
+
+    if (!error) return
+
+    if (attempt < maxAttempts) {
+      console.warn(`[webhook] Update failed for user ${userId} (attempt ${attempt}/${maxAttempts}):`, error)
+      await new Promise(r => setTimeout(r, 1000 * attempt))
+    } else {
+      console.error(`[webhook] Update permanently failed for user ${userId}:`, error)
+    }
+  }
+}
+
 export async function POST(request: Request) {
   try {
     // Read raw body — required for Stripe signature verification
@@ -25,6 +64,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 })
     }
 
+    console.log(`[webhook] Received event: ${event.type} (${event.id})`)
+
     // Handle events
     switch (event.type) {
 
@@ -38,17 +79,14 @@ export async function POST(request: Request) {
           break
         }
 
-        await supabaseAdmin
-          .from('profiles')
-          .update({
-            plan,
-            stripe_customer_id:     session.customer    as string,
-            stripe_subscription_id: session.subscription as string,
-            subscription_expires_at: null,
-          })
-          .eq('id', userId)
+        await updateProfileWithRetry(userId, {
+          plan,
+          stripe_customer_id:      session.customer    as string,
+          stripe_subscription_id:  session.subscription as string,
+          subscription_expires_at: null,
+        })
 
-        console.log(`[webhook] Plan updated for user ${userId}: ${plan}`)
+        console.log(`[webhook] checkout.session.completed — user ${userId} upgraded to ${plan}`)
         break
       }
 
@@ -62,15 +100,12 @@ export async function POST(request: Request) {
         }
 
         if (subscription.status === 'active' || subscription.status === 'trialing') {
-          // current_period_end is a Unix timestamp (number) on the Stripe Subscription object
           const periodEnd = (subscription as unknown as { current_period_end: number }).current_period_end
           const expiresAt = new Date(periodEnd * 1000).toISOString()
-          await supabaseAdmin
-            .from('profiles')
-            .update({ subscription_expires_at: expiresAt })
-            .eq('id', userId)
+          await updateProfileWithRetry(userId, { subscription_expires_at: expiresAt })
+          console.log(`[webhook] customer.subscription.updated — user ${userId} expires at ${expiresAt}`)
         } else if (subscription.status === 'past_due' || subscription.status === 'unpaid') {
-          console.warn(`[webhook] Subscription past due for user ${userId}`)
+          console.warn(`[webhook] customer.subscription.updated — subscription past_due/unpaid for user ${userId}`)
         }
         break
       }
@@ -84,22 +119,20 @@ export async function POST(request: Request) {
           break
         }
 
-        await supabaseAdmin
-          .from('profiles')
-          .update({
-            plan:                    'free',
-            stripe_subscription_id:  null,
-            subscription_expires_at: null,
-          })
-          .eq('id', userId)
+        // stripe_customer_id is preserved intentionally — the customer may resubscribe
+        await updateProfileWithRetry(userId, {
+          plan:                    'free',
+          stripe_subscription_id:  null,
+          subscription_expires_at: null,
+        })
 
-        console.log(`[webhook] Subscription cancelled for user ${userId} — plan reset to free`)
+        console.log(`[webhook] customer.subscription.deleted — user ${userId} reset to free`)
         break
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
-        console.warn(`[webhook] Payment failed for customer ${invoice.customer} — Stripe will retry`)
+        console.warn(`[webhook] invoice.payment_failed — customer ${invoice.customer}, Stripe will retry`)
         break
       }
 
