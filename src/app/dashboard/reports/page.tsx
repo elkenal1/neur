@@ -15,7 +15,7 @@ export default async function ReportsPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] p-8">
+    <div className="p-8">
       <div className="max-w-4xl mx-auto">
 
         <div className="flex items-center justify-between mb-8">

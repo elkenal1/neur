@@ -3,8 +3,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import { LogOut, LayoutDashboard, ClipboardList, MapPin, FileText, ArrowRight, Plus } from "lucide-react";
+import { ClipboardList, MapPin, FileText, ArrowRight, Plus } from "lucide-react";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -22,43 +21,7 @@ export default async function Dashboard() {
     .limit(5);
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] flex">
-
-      {/* Sidebar */}
-      <aside className="w-60 bg-[var(--color-navy)] text-white flex flex-col fixed h-full">
-        <div className="px-6 py-5 border-b border-white/10">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/neurlogo.png" alt="Neur" width={26} height={26} className="object-contain invert" />
-            <span className="text-base font-bold tracking-tight">NEUR</span>
-          </Link>
-        </div>
-
-        <nav className="flex-1 px-4 py-6 space-y-1 text-sm">
-          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/10 text-white font-medium">
-            <LayoutDashboard size={16} /> Dashboard
-          </Link>
-          <Link href="/questionnaire" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors">
-            <ClipboardList size={16} /> New Analysis
-          </Link>
-          <Link href="/dashboard/map" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors">
-            <MapPin size={16} /> Location Map
-          </Link>
-          <Link href="/dashboard/reports" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors">
-            <FileText size={16} /> My Reports
-          </Link>
-        </nav>
-
-        <div className="px-4 py-4 border-t border-white/10">
-          <form action="/auth/sign-out" method="post">
-            <button className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors text-sm">
-              <LogOut size={16} /> Sign Out
-            </button>
-          </form>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main className="ml-60 flex-1 p-8">
+    <div className="p-8">
         <div className="max-w-4xl mx-auto">
 
           {/* Welcome */}
@@ -151,7 +114,6 @@ export default async function Dashboard() {
           </div>
 
         </div>
-      </main>
     </div>
   );
 }
