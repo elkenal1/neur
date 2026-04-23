@@ -185,29 +185,30 @@ export default function Pricing() {
   }
 
   return (
-    <section id="pricing" className="py-24 px-6 bg-[var(--color-muted)]">
+    <section id="pricing" className="py-28 px-6 bg-[var(--color-muted)]">
       <div className="max-w-5xl mx-auto">
 
         <div className="text-center mb-16">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-blue)] mb-3">Pricing</p>
-          <h2 className="text-4xl font-extrabold text-[var(--color-navy)]">Simple, Transparent Pricing</h2>
-          <p className="mt-4 text-[var(--color-slate)] max-w-xl mx-auto">
-            Start with a one-time consultation or subscribe for ongoing access to all of Neur&apos;s tools and your personalized business tracker.
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-gold)] mb-3">Pricing</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-[var(--color-navy)] tracking-tight">Simple, transparent pricing</h2>
+          <p className="mt-4 text-[var(--color-slate)] max-w-lg mx-auto text-base">
+            Start free. Upgrade when you&apos;re ready to unlock your full report and launch toolkit.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-5">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`rounded-2xl p-6 flex flex-col border ${
+              className={`rounded-2xl p-7 flex flex-col border ${
                 plan.highlight
-                  ? 'bg-[var(--color-navy)] text-white border-[var(--color-navy)] shadow-xl scale-105'
-                  : 'bg-white text-[var(--color-foreground)] border-[var(--color-border)] shadow-sm'
+                  ? 'bg-[var(--color-navy)] text-white border-[var(--color-navy)] scale-[1.03]'
+                  : 'bg-white text-[var(--color-foreground)] border-[var(--color-border)]'
               }`}
+              style={plan.highlight ? { boxShadow: "0 8px 40px rgba(18,18,107,0.22)" } : { boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}
             >
               {plan.highlight && (
-                <div className="text-xs font-bold uppercase tracking-widest text-[var(--color-gold)] mb-3">
+                <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-gold)] mb-4">
                   Most Popular
                 </div>
               )}
