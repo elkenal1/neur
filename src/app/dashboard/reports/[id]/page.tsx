@@ -389,7 +389,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 </Link>
                 <Link href="/sign-up?plan=annual"
                   className="bg-white/10 text-white font-bold px-8 py-3 rounded-xl text-sm hover:bg-white/20 transition-colors border border-white/20">
-                  Annual — $249/year (save 3 months)
+                  Annual — $299/year (save 2 months)
                 </Link>
               </div>
             </div>

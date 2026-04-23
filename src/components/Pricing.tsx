@@ -48,9 +48,9 @@ const plans = [
   {
     key: 'annual',
     name: 'Annual',
-    price: '$249',
+    price: '$299',
     label: 'per year',
-    description: 'Everything in Monthly — save over 3 months free.',
+    description: 'Everything in Monthly — save over 2 months free.',
     features: [
       'Up to 10 analyses per month',
       'Everything in Monthly',
