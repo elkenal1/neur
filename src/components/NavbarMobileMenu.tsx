@@ -17,7 +17,7 @@ export default function NavbarMobileMenu({ isLoggedIn }: { isLoggedIn: boolean }
         <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-t border-[var(--color-border)] px-6 py-4 flex flex-col gap-4 text-sm font-medium text-[var(--color-slate)] shadow-lg">
           <Link href="#how-it-works" onClick={() => setOpen(false)}>How It Works</Link>
           <Link href="#pricing" onClick={() => setOpen(false)}>Pricing</Link>
-          <Link href="#" onClick={() => setOpen(false)}>Consultants</Link>
+          <Link href="/about" onClick={() => setOpen(false)}>About</Link>
           <hr className="border-[var(--color-border)]" />
           {isLoggedIn ? (
             <Link

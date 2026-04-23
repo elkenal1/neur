@@ -255,7 +255,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                   You&apos;re seeing a summary. Unlock the full report including all demographics, competition map, and PDF download.
                 </p>
                 <Link href="/sign-up?plan=monthly" className="inline-block mt-3 bg-[var(--color-gold)] text-[var(--color-navy)] font-bold px-4 py-1.5 rounded-lg text-xs hover:bg-[var(--color-gold-light)] transition-colors">
-                  Unlock for $20/mo →
+                  Unlock for $29/mo →
                 </Link>
               </div>
             )}
@@ -385,11 +385,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/sign-up?plan=monthly"
                   className="bg-[var(--color-gold)] text-[var(--color-navy)] font-bold px-8 py-3 rounded-xl text-sm hover:bg-[var(--color-gold-light)] transition-colors">
-                  Subscribe — $20/month
+                  Subscribe — $29/month
                 </Link>
                 <Link href="/sign-up?plan=annual"
                   className="bg-white/10 text-white font-bold px-8 py-3 rounded-xl text-sm hover:bg-white/20 transition-colors border border-white/20">
-                  Annual — $200/year (save 2 months)
+                  Annual — $249/year (save 3 months)
                 </Link>
               </div>
             </div>

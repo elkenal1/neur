@@ -22,23 +22,23 @@ const plans = [
       'Human review included',
     ],
     cta: 'Book a Consultation',
-    href: '/sign-up?plan=consultation',
+    href: '/contact?plan=consultation',
     highlight: false,
     stripePlan: null as null,
   },
   {
     key: 'monthly',
     name: 'Monthly',
-    price: '$20',
+    price: '$29',
     label: 'per month',
     description: 'Full platform access — browse, analyze, and plan on your schedule.',
     features: [
-      'Unlimited location browsing',
-      'Live US market data',
-      'Industry trend insights',
-      'Financing options hub',
-      'Business launch guides',
-      'Downloadable PDF reports',
+      'Up to 5 analyses per month',
+      'Full report with all data',
+      'Comparable cities engine',
+      'PDF downloads (3/month)',
+      'Business launch tracker',
+      'Unlimited article access',
     ],
     cta: 'Get Started',
     href: '/sign-up?plan=monthly',
@@ -48,12 +48,13 @@ const plans = [
   {
     key: 'annual',
     name: 'Annual',
-    price: '$200',
+    price: '$249',
     label: 'per year',
-    description: 'Everything in Monthly — save 2 months free.',
+    description: 'Everything in Monthly — save over 3 months free.',
     features: [
+      'Up to 10 analyses per month',
       'Everything in Monthly',
-      '2 months free',
+      'PDF downloads (5/month)',
       'Priority support',
       'Early access to new features',
     ],
@@ -61,24 +62,6 @@ const plans = [
     href: '/sign-up?plan=annual',
     highlight: false,
     stripePlan: 'annual' as const,
-  },
-  {
-    key: 'consultant',
-    name: 'Consultant',
-    price: null,
-    label: 'Enterprise',
-    description: 'A dedicated Neur portal for independent consultants to use with clients.',
-    features: [
-      'Branded consultant portal',
-      'Multi-client management',
-      'Client report generation',
-      'White-label PDF reports',
-      'Priority support',
-    ],
-    cta: 'Contact Us',
-    href: '/contact?plan=consultant',
-    highlight: false,
-    stripePlan: null as null,
   },
 ]
 
@@ -123,9 +106,7 @@ export default function Pricing() {
         body: JSON.stringify({ plan, userId, email: userEmail }),
       })
       const json = await res.json()
-      if (json.url) {
-        window.location.href = json.url
-      }
+      if (json.url) window.location.href = json.url
     } catch {
       setUpgrading(null)
     }
@@ -134,7 +115,6 @@ export default function Pricing() {
   function renderButton(plan: typeof plans[number]) {
     const isPaidPlan = plan.stripePlan === 'monthly' || plan.stripePlan === 'annual'
 
-    // Not a paid plan (One-Time / Consultant) — always a link
     if (!isPaidPlan) {
       return (
         <Link
@@ -150,20 +130,16 @@ export default function Pricing() {
       )
     }
 
-    // Still loading auth state — show neutral button
     if (!loaded) {
       return (
         <div className={`text-center text-sm font-bold px-4 py-3 rounded-xl opacity-50 ${
-          plan.highlight
-            ? 'bg-[var(--color-gold)] text-[var(--color-navy)]'
-            : 'bg-[var(--color-navy)] text-white'
+          plan.highlight ? 'bg-[var(--color-gold)] text-[var(--color-navy)]' : 'bg-[var(--color-navy)] text-white'
         }`}>
           {plan.cta}
         </div>
       )
     }
 
-    // Signed out — link to sign-up
     if (!userPlan) {
       return (
         <Link
@@ -179,27 +155,20 @@ export default function Pricing() {
       )
     }
 
-    // User is on this plan — show badge
     const isCurrentPlan =
       userPlan === plan.stripePlan ||
-      (plan.stripePlan === 'monthly' && userPlan === 'monthly') ||
-      (plan.stripePlan === 'annual' && userPlan === 'annual') ||
-      userPlan === 'consultant' ||
-      userPlan === 'admin'
+      ((userPlan === 'consultant' || userPlan === 'admin') && plan.stripePlan === 'annual')
 
     if (isCurrentPlan) {
       return (
         <div className={`text-center text-sm font-bold px-4 py-3 rounded-xl ${
-          plan.highlight
-            ? 'bg-white/20 text-white'
-            : 'bg-[var(--color-muted)] text-[var(--color-navy)]'
+          plan.highlight ? 'bg-white/20 text-white' : 'bg-[var(--color-muted)] text-[var(--color-navy)]'
         }`}>
           ✓ Current Plan
         </div>
       )
     }
 
-    // Free user — show upgrade button
     return (
       <button
         onClick={() => handleUpgrade(plan.stripePlan!)}
@@ -217,17 +186,17 @@ export default function Pricing() {
 
   return (
     <section id="pricing" className="py-24 px-6 bg-[var(--color-muted)]">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
 
         <div className="text-center mb-16">
           <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-blue)] mb-3">Pricing</p>
           <h2 className="text-4xl font-extrabold text-[var(--color-navy)]">Simple, Transparent Pricing</h2>
           <p className="mt-4 text-[var(--color-slate)] max-w-xl mx-auto">
-            Start with a one-time consultation or subscribe for ongoing access to all of Neur&apos;s tools.
+            Start with a one-time consultation or subscribe for ongoing access to all of Neur&apos;s tools and your personalized business tracker.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {plans.map((plan) => (
             <div
               key={plan.name}

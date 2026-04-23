@@ -25,23 +25,23 @@ export default function Footer() {
               <ul className="space-y-2">
                 <li><Link href="#how-it-works" className="hover:text-white transition-colors">How It Works</Link></li>
                 <li><Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Consultants</Link></li>
+                <li><Link href="/sign-up" className="hover:text-white transition-colors">Get Started</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-3">Resources</h4>
               <ul className="space-y-2">
-                <li><Link href="#" className="hover:text-white transition-colors">Business Guides</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Financing Options</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Market Data</Link></li>
+                <li><Link href="/blog" className="hover:text-white transition-colors">Blog &amp; Guides</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+                <li><Link href="/sign-in" className="hover:text-white transition-colors">Sign In</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-3">Company</h4>
               <ul className="space-y-2">
-                <li><Link href="#" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
@@ -49,7 +49,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row justify-between items-center gap-2 text-xs">
-          <p>© {new Date().getFullYear()} Neur. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Neur LLC. All rights reserved.</p>
           <p>Built for entrepreneurs across the United States.</p>
         </div>
       </div>

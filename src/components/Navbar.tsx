@@ -22,7 +22,7 @@ export default async function Navbar() {
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[var(--color-slate)]">
           <Link href="#how-it-works" className="hover:text-[var(--color-navy)] transition-colors">How It Works</Link>
           <Link href="#pricing" className="hover:text-[var(--color-navy)] transition-colors">Pricing</Link>
-          <Link href="#" className="hover:text-[var(--color-navy)] transition-colors">Consultants</Link>
+          <Link href="/about" className="hover:text-[var(--color-navy)] transition-colors">About</Link>
         </nav>
 
         {/* Desktop CTA — auth-aware */}
