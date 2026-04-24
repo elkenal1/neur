@@ -9,7 +9,6 @@ import { findComparableCities } from "@/lib/comparableCities";
 import FeasibilitySection from "@/components/reports/FeasibilitySection";
 import ComparableCitiesSection from "@/components/reports/ComparableCitiesSection";
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowLeft, TrendingUp, MapPin, Users, DollarSign,
   BarChart2, FileText, CheckCircle, Clock,
@@ -68,7 +67,7 @@ function DataSection({ icon: Icon, title, badge, children }: {
   icon: React.ElementType; title: string; badge?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-[var(--color-border)] p-6">
+    <div className="bg-white rounded-2xl border border-[var(--color-border)] p-6" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
           <div className="bg-[var(--color-navy)] text-white rounded-xl p-2"><Icon size={16} /></div>
@@ -85,7 +84,7 @@ function StatCard({ label, value, color = "text-[var(--color-navy)]" }: {
   label: string; value: string; color?: string;
 }) {
   return (
-    <div className="bg-[var(--color-muted)] rounded-xl p-4 text-center">
+    <div className="rounded-xl p-4 text-center" style={{ background: '#F0EDE8' }}>
       <div className={`text-xl font-extrabold ${color}`}>{value}</div>
       <div className="text-xs text-[var(--color-slate)] mt-1">{label}</div>
     </div>
@@ -94,15 +93,14 @@ function StatCard({ label, value, color = "text-[var(--color-navy)]" }: {
 
 function LockedSection({ title, description }: { title: string; description: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-[var(--color-border)] overflow-hidden">
-      <div className="p-6 filter blur-[2px] pointer-events-none select-none opacity-50">
-        <div className="h-4 bg-[var(--color-muted)] rounded w-1/3 mb-4" />
+    <div className="bg-white rounded-2xl border border-[var(--color-border)] overflow-hidden" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+      <div className="p-6 filter blur-[2px] pointer-events-none select-none opacity-40">
+        <div className="h-4 rounded w-1/3 mb-4" style={{ background: '#F0EDE8' }} />
         <div className="grid grid-cols-3 gap-3">
-          {[1,2,3].map(i => <div key={i} className="bg-[var(--color-muted)] rounded-xl h-20" />)}
+          {[1,2,3].map(i => <div key={i} className="rounded-xl h-20" style={{ background: '#F0EDE8' }} />)}
         </div>
       </div>
-      <div className="absolute inset-0 flex items-center justify-center" />
-      <div className="border-t border-[var(--color-border)] bg-[var(--color-muted)] px-6 py-4 flex items-center justify-between gap-4">
+      <div className="border-t border-[var(--color-border)] px-6 py-4 flex items-center justify-between gap-4" style={{ background: '#F7F4EF' }}>
         <div className="flex items-center gap-3">
           <Lock size={16} className="text-[var(--color-navy)] shrink-0" />
           <div>
@@ -112,9 +110,10 @@ function LockedSection({ title, description }: { title: string; description: str
         </div>
         <Link
           href="/sign-up?plan=monthly"
-          className="shrink-0 bg-[var(--color-navy)] text-white font-bold px-4 py-2 rounded-xl text-xs hover:bg-[var(--color-navy-light)] transition-colors whitespace-nowrap"
+          className="shrink-0 font-bold px-4 py-2 rounded-xl text-xs transition-colors whitespace-nowrap"
+          style={{ background: 'var(--color-navy)', color: 'white' }}
         >
-          Unlock — $20/mo
+          Unlock — $29/mo
         </Link>
       </div>
     </div>
@@ -201,60 +200,61 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     : null;
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)]">
-
-      {/* Top bar */}
-      <div className="sticky top-0 z-40 bg-white border-b border-[var(--color-border)] px-6 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Image src="/neurlogo.png" alt="Neur" width={22} height={22} className="object-contain" />
-            <span className="text-sm font-bold text-[var(--color-navy)]">NEUR</span>
-          </Link>
-          <span className="text-[var(--color-border)]">/</span>
-          <Link href="/dashboard" className="text-sm text-[var(--color-slate)] hover:text-[var(--color-navy)] flex items-center gap-1">
-            <ArrowLeft size={14} /> Dashboard
-          </Link>
-        </div>
-        {isPaid ? (
-          <a
-            href={`/api/report-pdf?id=${a.id}`}
-            className="flex items-center gap-2 text-sm font-semibold text-[var(--color-navy)] border border-[var(--color-border)] px-4 py-1.5 rounded-lg hover:bg-[var(--color-muted)] transition-colors"
-          >
-            <FileText size={14} /> Download PDF
-          </a>
-        ) : (
-          <Link
-            href="/sign-up?plan=monthly"
-            className="flex items-center gap-2 text-sm font-semibold bg-[var(--color-gold)] text-[var(--color-navy)] px-4 py-1.5 rounded-lg hover:bg-[var(--color-gold-light)] transition-colors"
-          >
-            <Lock size={14} /> Unlock Full Report
-          </Link>
-        )}
-      </div>
+    <div className="min-h-screen" style={{ background: '#F7F4EF' }}>
 
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
 
+        {/* Breadcrumb + actions row */}
+        <div className="flex items-center justify-between">
+          <Link href="/dashboard/reports" className="flex items-center gap-1.5 text-sm text-[var(--color-slate)] hover:text-[var(--color-navy)] transition-colors font-medium">
+            <ArrowLeft size={14} /> My Reports
+          </Link>
+          {isPaid ? (
+            <a
+              href={`/api/report-pdf?id=${a.id}`}
+              className="flex items-center gap-2 text-sm font-semibold text-[var(--color-navy)] bg-white border border-[var(--color-border)] px-4 py-2 rounded-xl hover:shadow-sm transition-all"
+            >
+              <FileText size={14} /> Download PDF
+            </a>
+          ) : (
+            <Link
+              href="/sign-up?plan=monthly"
+              className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+              style={{ background: 'var(--color-gold)', color: 'var(--color-navy)' }}
+            >
+              <Lock size={14} /> Unlock Full Report
+            </Link>
+          )}
+        </div>
+
         {/* Header */}
-        <div className="bg-[var(--color-navy)] text-white rounded-2xl p-8">
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div
+          className="grain text-white rounded-2xl p-8"
+          style={{ background: 'linear-gradient(135deg, #06061a 0%, #12126B 60%, #1a1a8a 100%)' }}
+        >
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-2">Business Analysis Report</div>
+              <div className="text-xs font-semibold uppercase tracking-widest text-white/40 mb-2">Business Analysis Report</div>
               <h1 className="text-2xl font-extrabold">{displayIndustry}</h1>
-              <div className="flex flex-wrap items-center gap-2 mt-2 text-white/70 text-sm">
+              <div className="flex flex-wrap items-center gap-2 mt-2 text-white/60 text-sm">
                 <MapPin size={14} /><span>{location}</span>
-                <span className="text-white/30">·</span>
+                <span className="text-white/25">·</span>
                 <span>{BUDGET_LABELS[a.budget_range] ?? a.budget_range}</span>
-                <span className="text-white/30">·</span>
+                <span className="text-white/25">·</span>
                 <span>{GOAL_LABELS[a.primary_goal] ?? a.primary_goal}</span>
               </div>
             </div>
             {!isPaid && (
-              <div className="bg-[var(--color-gold)]/20 border border-[var(--color-gold)]/40 rounded-xl px-5 py-4 text-sm max-w-xs">
-                <div className="font-bold text-[var(--color-gold)] mb-1">🔓 Preview Mode</div>
-                <p className="text-white/70 text-xs leading-relaxed">
-                  You&apos;re seeing a summary. Unlock the full report including all demographics, competition map, and PDF download.
+              <div className="rounded-xl px-5 py-4 text-sm max-w-xs shrink-0" style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)' }}>
+                <div className="font-bold text-[var(--color-gold)] mb-1">Preview Mode</div>
+                <p className="text-white/60 text-xs leading-relaxed">
+                  Unlock the full report including all demographics, competition map, PDF download, and your action plan.
                 </p>
-                <Link href="/sign-up?plan=monthly" className="inline-block mt-3 bg-[var(--color-gold)] text-[var(--color-navy)] font-bold px-4 py-1.5 rounded-lg text-xs hover:bg-[var(--color-gold-light)] transition-colors">
+                <Link
+                  href="/sign-up?plan=monthly"
+                  className="inline-block mt-3 font-bold px-4 py-1.5 rounded-lg text-xs transition-colors"
+                  style={{ background: 'var(--color-gold)', color: 'var(--color-navy)' }}
+                >
                   Unlock for $29/mo →
                 </Link>
               </div>
@@ -376,19 +376,28 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             />
 
             {/* Upgrade CTA */}
-            <div className="bg-[var(--color-navy)] rounded-2xl p-8 text-center text-white">
-              <div className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-2">Unlock Everything</div>
+            <div
+              className="grain rounded-2xl p-8 text-center text-white"
+              style={{ background: 'linear-gradient(135deg, #06061a 0%, #12126B 60%, #1a1a8a 100%)' }}
+            >
+              <div className="text-xs font-semibold uppercase tracking-widest text-white/40 mb-2">Unlock Everything</div>
               <h2 className="text-2xl font-extrabold mb-2">Get the Full Picture</h2>
-              <p className="text-white/70 text-sm max-w-md mx-auto mb-6">
+              <p className="text-white/60 text-sm max-w-md mx-auto mb-6">
                 Competition map, complete demographics, labor market data, financing options, PDF download, and your personalized action plan.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/sign-up?plan=monthly"
-                  className="bg-[var(--color-gold)] text-[var(--color-navy)] font-bold px-8 py-3 rounded-xl text-sm hover:bg-[var(--color-gold-light)] transition-colors">
+                <Link
+                  href="/sign-up?plan=monthly"
+                  className="font-bold px-8 py-3 rounded-xl text-sm transition-colors"
+                  style={{ background: 'var(--color-gold)', color: 'var(--color-navy)' }}
+                >
                   Subscribe — $29/month
                 </Link>
-                <Link href="/sign-up?plan=annual"
-                  className="bg-white/10 text-white font-bold px-8 py-3 rounded-xl text-sm hover:bg-white/20 transition-colors border border-white/20">
+                <Link
+                  href="/sign-up?plan=annual"
+                  className="font-bold px-8 py-3 rounded-xl text-sm transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
+                >
                   Annual — $299/year (save 2 months)
                 </Link>
               </div>
@@ -471,7 +480,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         )}
 
         {/* Always visible: questionnaire summary */}
-        <div className="bg-white rounded-2xl border border-[var(--color-border)] p-6">
+        <div className="bg-white rounded-2xl border border-[var(--color-border)] p-6" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
           <h3 className="font-bold text-[var(--color-navy)] mb-4 flex items-center gap-2">
             <CheckCircle size={16} className="text-[var(--color-emerald)]" /> Your Questionnaire Summary
           </h3>
@@ -484,7 +493,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               ["Primary Goal", GOAL_LABELS[a.primary_goal] ?? a.primary_goal],
               ["Customer Type", a.customer_type?.toUpperCase()],
             ].filter(([, v]) => v).map(([label, value]) => (
-              <div key={label} className="flex justify-between bg-[var(--color-muted)] px-4 py-2.5 rounded-lg">
+              <div key={label} className="flex justify-between px-4 py-2.5 rounded-lg" style={{ background: '#F7F4EF' }}>
                 <span className="text-[var(--color-slate)]">{label}</span>
                 <span className="font-semibold text-[var(--color-navy)] capitalize">{value}</span>
               </div>
