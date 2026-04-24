@@ -76,17 +76,28 @@ function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] px-6">
-      <div className="bg-white rounded-2xl border border-[var(--color-border)] shadow-sm p-8 max-w-md w-full">
+    <div
+      className="grain min-h-screen flex items-center justify-center px-6 py-12"
+      style={{ background: 'linear-gradient(140deg, #06061a 0%, #12126B 55%, #080824 100%)' }}
+    >
+      <div
+        className="rounded-2xl p-8 max-w-md w-full"
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
+        }}
+      >
 
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <Image src="/neurlogo.png" alt="Neur" width={28} height={28} className="object-contain" />
-            <span className="text-lg font-bold text-[var(--color-navy)] tracking-tight">NEUR</span>
+            <span className="text-lg font-bold text-white tracking-tight">NEUR</span>
           </Link>
-          <h1 className="text-2xl font-extrabold text-[var(--color-navy)]">Welcome back</h1>
-          <p className="text-sm text-[var(--color-slate)] mt-1">Sign in to your Neur account</p>
+          <h1 className="text-2xl font-extrabold text-white">Welcome back</h1>
+          <p className="text-sm text-white/50 mt-1">Sign in to your Neur account</p>
         </div>
 
         {/* OAuth buttons */}
@@ -94,7 +105,8 @@ function SignInForm() {
           <button
             onClick={() => handleOAuth('google')}
             disabled={!!oauthLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-gray-50 transition-colors disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
           >
             <GoogleIcon />
             {oauthLoading === 'google' ? 'Redirecting...' : 'Continue with Google'}
@@ -102,7 +114,8 @@ function SignInForm() {
           <button
             onClick={() => handleOAuth('facebook')}
             disabled={!!oauthLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-gray-50 transition-colors disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
           >
             <FacebookIcon />
             {oauthLoading === 'facebook' ? 'Redirecting...' : 'Continue with Facebook'}
@@ -110,7 +123,8 @@ function SignInForm() {
           <button
             onClick={() => handleOAuth('apple')}
             disabled={!!oauthLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-gray-50 transition-colors disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
           >
             <AppleIcon />
             {oauthLoading === 'apple' ? 'Redirecting...' : 'Continue with Apple'}
@@ -120,30 +134,34 @@ function SignInForm() {
         {/* Divider */}
         <div className="relative my-5">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[var(--color-border)]" />
+            <div className="w-full border-t border-white/10" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-[var(--color-slate)]">or</span>
+            <span className="px-2 text-white/30" style={{ background: 'transparent' }}>or</span>
           </div>
         </div>
 
         {/* Email/password form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1">Email</label>
+            <label className="block text-sm font-medium text-white/70 mb-1">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="jane@example.com"
-              className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
+              className="w-full px-4 py-2.5 rounded-lg text-sm text-white placeholder-white/30 outline-none transition"
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+              }}
             />
           </div>
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm font-medium text-[var(--color-foreground)]">Password</label>
-              <Link href="/forgot-password" className="text-xs text-[var(--color-blue)] hover:underline">
+              <label className="block text-sm font-medium text-white/70">Password</label>
+              <Link href="/forgot-password" className="text-xs text-[var(--color-gold)] hover:underline">
                 Forgot password?
               </Link>
             </div>
@@ -153,12 +171,16 @@ function SignInForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Your password"
-              className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
+              className="w-full px-4 py-2.5 rounded-lg text-sm text-white placeholder-white/30 outline-none transition"
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+              }}
             />
           </div>
 
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">
+            <div className="text-sm text-red-300 bg-red-900/30 border border-red-500/30 rounded-lg px-4 py-2.5">
               {error}
             </div>
           )}
@@ -166,15 +188,16 @@ function SignInForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[var(--color-navy)] text-white font-bold py-3 rounded-xl hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-60"
+            className="w-full font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+            style={{ background: 'var(--color-gold)', color: 'var(--color-navy)' }}
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        <p className="text-center text-sm text-[var(--color-slate)] mt-6">
+        <p className="text-center text-sm text-white/40 mt-6">
           Don&apos;t have an account?{" "}
-          <Link href="/sign-up" className="text-[var(--color-blue)] font-semibold hover:underline">
+          <Link href="/sign-up" className="text-[var(--color-gold)] font-semibold hover:underline">
             Get started free
           </Link>
         </p>

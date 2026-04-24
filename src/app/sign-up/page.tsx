@@ -134,51 +134,84 @@ function SignUpInner() {
     })
   }
 
+  const glassPage = (children: React.ReactNode) => (
+    <div
+      className="grain min-h-screen flex items-center justify-center px-6 py-12"
+      style={{ background: 'linear-gradient(140deg, #06061a 0%, #12126B 55%, #080824 100%)' }}
+    >
+      {children}
+    </div>
+  )
+
+  const glassCard = (children: React.ReactNode) => (
+    <div
+      className="rounded-2xl p-8 max-w-md w-full"
+      style={{
+        background: 'rgba(255,255,255,0.06)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
+      }}
+    >
+      {children}
+    </div>
+  )
+
   // Checkout redirect in progress
   if (checkoutLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] px-6">
-        <div className="bg-white rounded-2xl border border-[var(--color-border)] shadow-sm p-10 max-w-md w-full text-center">
-          <div className="text-4xl mb-4">⏳</div>
-          <h2 className="text-xl font-bold text-[var(--color-navy)] mb-2">Setting up your subscription...</h2>
-          <p className="text-[var(--color-slate)] text-sm">
-            You&apos;ll be redirected to Stripe to complete your payment.
-          </p>
-        </div>
+    return glassPage(glassCard(
+      <div className="text-center py-2">
+        <div className="text-4xl mb-4">⏳</div>
+        <h2 className="text-xl font-bold text-white mb-2">Setting up your subscription...</h2>
+        <p className="text-white/50 text-sm">
+          You&apos;ll be redirected to Stripe to complete your payment.
+        </p>
       </div>
-    )
+    ))
   }
 
   // Free signup — confirm email
   if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] px-6">
-        <div className="bg-white rounded-2xl border border-[var(--color-border)] shadow-sm p-10 max-w-md w-full text-center">
-          <div className="text-4xl mb-4">📬</div>
-          <h2 className="text-xl font-bold text-[var(--color-navy)] mb-2">Check your email</h2>
-          <p className="text-[var(--color-slate)] text-sm">
-            We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.
-          </p>
-        </div>
+    return glassPage(glassCard(
+      <div className="text-center py-2">
+        <div className="text-4xl mb-4">📬</div>
+        <h2 className="text-xl font-bold text-white mb-2">Check your email</h2>
+        <p className="text-white/50 text-sm">
+          We sent a confirmation link to <strong className="text-white/80">{email}</strong>. Click it to activate your account.
+        </p>
       </div>
-    )
+    ))
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] px-6">
-      <div className="bg-white rounded-2xl border border-[var(--color-border)] shadow-sm p-8 max-w-md w-full">
+    <div
+      className="grain min-h-screen flex items-center justify-center px-6 py-12"
+      style={{ background: 'linear-gradient(140deg, #06061a 0%, #12126B 55%, #080824 100%)' }}
+    >
+      <div
+        className="rounded-2xl p-8 max-w-md w-full"
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
+        }}
+      >
 
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <Image src="/neurlogo.png" alt="Neur" width={28} height={28} className="object-contain" />
-            <span className="text-lg font-bold text-[var(--color-navy)] tracking-tight">NEUR</span>
+            <span className="text-lg font-bold text-white tracking-tight">NEUR</span>
           </Link>
-          <h1 className="text-2xl font-extrabold text-[var(--color-navy)]">Create your account</h1>
-          <p className="text-sm text-[var(--color-slate)] mt-1">Start finding your perfect business opportunity</p>
+          <h1 className="text-2xl font-extrabold text-white">Create your account</h1>
+          <p className="text-sm text-white/50 mt-1">Start finding your perfect business opportunity</p>
           {validPlan && (
-            <div className="mt-3 inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-              {validPlan === 'monthly' ? '📅 Monthly Plan — $20/mo' : '📆 Annual Plan — $200/yr'}
+            <div
+              className="mt-3 inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full"
+              style={{ background: 'rgba(245,158,11,0.15)', color: 'var(--color-gold)', border: '1px solid rgba(245,158,11,0.3)' }}
+            >
+              {validPlan === 'monthly' ? '📅 Monthly Plan — $29/mo' : '📆 Annual Plan — $299/yr'}
             </div>
           )}
         </div>
@@ -188,7 +221,8 @@ function SignUpInner() {
           <button
             onClick={() => handleOAuth('google')}
             disabled={!!oauthLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-gray-50 transition-colors disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
           >
             <GoogleIcon />
             {oauthLoading === 'google' ? 'Redirecting...' : 'Continue with Google'}
@@ -196,7 +230,8 @@ function SignUpInner() {
           <button
             onClick={() => handleOAuth('facebook')}
             disabled={!!oauthLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-gray-50 transition-colors disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
           >
             <FacebookIcon />
             {oauthLoading === 'facebook' ? 'Redirecting...' : 'Continue with Facebook'}
@@ -204,7 +239,8 @@ function SignUpInner() {
           <button
             onClick={() => handleOAuth('apple')}
             disabled={!!oauthLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-gray-50 transition-colors disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
           >
             <AppleIcon />
             {oauthLoading === 'apple' ? 'Redirecting...' : 'Continue with Apple'}
@@ -214,39 +250,41 @@ function SignUpInner() {
         {/* Divider */}
         <div className="relative my-5">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[var(--color-border)]" />
+            <div className="w-full border-t border-white/10" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-[var(--color-slate)]">or</span>
+            <span className="px-2 text-white/30">or</span>
           </div>
         </div>
 
         {/* Email/password form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1">Full Name</label>
+            <label className="block text-sm font-medium text-white/70 mb-1">Full Name</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Jane Smith"
-              className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
+              className="w-full px-4 py-2.5 rounded-lg text-sm text-white placeholder-white/30 outline-none transition"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1">Email</label>
+            <label className="block text-sm font-medium text-white/70 mb-1">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="jane@example.com"
-              className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
+              className="w-full px-4 py-2.5 rounded-lg text-sm text-white placeholder-white/30 outline-none transition"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1">Password</label>
+            <label className="block text-sm font-medium text-white/70 mb-1">Password</label>
             <input
               type="password"
               required
@@ -254,12 +292,13 @@ function SignUpInner() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 8 characters"
-              className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
+              className="w-full px-4 py-2.5 rounded-lg text-sm text-white placeholder-white/30 outline-none transition"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
             />
           </div>
 
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">
+            <div className="text-sm text-red-300 bg-red-900/30 border border-red-500/30 rounded-lg px-4 py-2.5">
               {error}
             </div>
           )}
@@ -267,7 +306,8 @@ function SignUpInner() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[var(--color-navy)] text-white font-bold py-3 rounded-xl hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-60"
+            className="w-full font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+            style={{ background: 'var(--color-gold)', color: 'var(--color-navy)' }}
           >
             {loading
               ? 'Creating account...'
@@ -277,9 +317,9 @@ function SignUpInner() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-[var(--color-slate)] mt-6">
+        <p className="text-center text-sm text-white/40 mt-6">
           Already have an account?{' '}
-          <Link href="/sign-in" className="text-[var(--color-blue)] font-semibold hover:underline">
+          <Link href="/sign-in" className="text-[var(--color-gold)] font-semibold hover:underline">
             Sign in
           </Link>
         </p>
@@ -292,8 +332,11 @@ function SignUpInner() {
 export default function SignUp() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)]">
-        <div className="text-[var(--color-slate)] text-sm">Loading...</div>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: 'linear-gradient(140deg, #06061a 0%, #12126B 55%, #080824 100%)' }}
+      >
+        <div className="text-white/40 text-sm">Loading...</div>
       </div>
     }>
       <SignUpInner />

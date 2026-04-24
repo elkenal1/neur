@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { redirect } from 'next/navigation'
 import DashboardSidebar from '@/components/DashboardSidebar'
+import DashboardHeader from '@/components/DashboardHeader'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -19,10 +20,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const plan      = profile?.plan ?? 'free'
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] flex">
+    <div className="min-h-screen flex" style={{ background: '#F7F4EF' }}>
       <DashboardSidebar userName={userName} userEmail={userEmail} plan={plan} />
-      <div className="ml-60 flex-1 min-w-0">
-        {children}
+      <div className="ml-60 flex-1 min-w-0 flex flex-col">
+        <DashboardHeader userName={userName} userEmail={userEmail} plan={plan} />
+        <div className="flex-1">
+          {children}
+        </div>
       </div>
     </div>
   )

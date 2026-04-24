@@ -44,23 +44,35 @@ function ScoreRing({ score }: { score: number }) {
   )
 }
 
-function LockedRing() {
+function BlurredRing({ score }: { score: number }) {
+  const color = scoreColor(score)
+  const offset = CIRCUMFERENCE * (1 - score / 100)
   return (
     <div className="relative w-[120px] h-[120px] shrink-0">
-      <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90 absolute inset-0 opacity-25">
-        <circle cx="60" cy="60" r={RADIUS} fill="none" stroke="#E2E8F0" strokeWidth="10" />
-        <circle
-          cx="60" cy="60" r={RADIUS}
-          fill="none"
-          stroke="#64748B"
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeDasharray={CIRCUMFERENCE}
-          strokeDashoffset={CIRCUMFERENCE * 0.38}
-        />
-      </svg>
+      {/* Blurred actual ring */}
+      <div style={{ filter: 'blur(6px)', opacity: 0.7 }}>
+        <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90 absolute inset-0">
+          <circle cx="60" cy="60" r={RADIUS} fill="none" stroke="#E2E8F0" strokeWidth="10" />
+          <circle
+            cx="60" cy="60" r={RADIUS}
+            fill="none"
+            stroke={color}
+            strokeWidth="10"
+            strokeLinecap="round"
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={offset}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-extrabold text-[var(--color-navy)]">{score}</span>
+          <span className="text-[10px] font-semibold text-[var(--color-slate)] uppercase tracking-wide">/ 100</span>
+        </div>
+      </div>
+      {/* Lock overlay */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <Lock size={26} className="text-[var(--color-slate)]" />
+        <div className="bg-white rounded-full p-2 shadow-md">
+          <Lock size={18} className="text-[var(--color-navy)]" />
+        </div>
       </div>
     </div>
   )
@@ -183,7 +195,7 @@ export default function FeasibilitySection({
           </div>
         ) : (
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <LockedRing />
+            <BlurredRing score={score.overall_score} />
             <div className="flex-1 text-center sm:text-left">
               <div className="font-bold text-[var(--color-navy)] mb-1">
                 Your business has been scored
@@ -195,7 +207,7 @@ export default function FeasibilitySection({
                 href="/sign-up?plan=monthly"
                 className="inline-block bg-[var(--color-navy)] text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[var(--color-navy-light)] transition-colors"
               >
-                Unlock Full Report — $20/mo
+                Unlock Full Report — $29/mo
               </Link>
             </div>
           </div>
