@@ -13,7 +13,7 @@ export default function ContactPage() {
       <Navbar />
       <main className="pt-24 min-h-screen bg-[var(--color-background)]">
 
-        <section className="bg-[var(--color-navy)] text-white py-16 px-6">
+        <section className="grain text-white py-16 px-6" style={{ background: "linear-gradient(140deg, #06061a 0%, #12126B 55%, #080824 100%)" }}>
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-gold)] mb-4">Get in Touch</p>
             <h1 className="text-4xl font-extrabold mb-4">We&apos;re here to help</h1>

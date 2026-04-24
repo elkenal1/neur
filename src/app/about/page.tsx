@@ -14,7 +14,7 @@ export default function AboutPage() {
       <main className="pt-24">
 
         {/* Hero */}
-        <section className="bg-[var(--color-navy)] text-white py-20 px-6">
+        <section className="grain text-white py-20 px-6" style={{ background: "linear-gradient(140deg, #06061a 0%, #12126B 55%, #080824 100%)" }}>
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-gold)] mb-4">Our Story</p>
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-6">
@@ -95,7 +95,7 @@ export default function AboutPage() {
         </section>
 
         {/* CTA */}
-        <section className="py-20 px-6 bg-[var(--color-navy)] text-white text-center">
+        <section className="grain py-20 px-6 text-white text-center" style={{ background: "linear-gradient(140deg, #06061a 0%, #12126B 55%, #080824 100%)" }}>
           <div className="max-w-xl mx-auto">
             <h2 className="text-3xl font-extrabold mb-4">Ready to find your opportunity?</h2>
             <p className="text-white/70 mb-8">Fill out your profile and get your personalized feasibility report in minutes.</p>

@@ -185,7 +185,7 @@ export default function Pricing() {
   }
 
   return (
-    <section id="pricing" className="py-28 px-6 bg-[var(--color-muted)]">
+    <section id="pricing" className="py-28 px-6" style={{ background: "#F0EDE8" }}>
       <div className="max-w-5xl mx-auto">
 
         <div className="text-center mb-16">

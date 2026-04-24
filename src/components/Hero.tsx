@@ -2,9 +2,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 const stats = [
-  { value: "310+",  label: "US Cities Analyzed" },
-  { value: "50+",   label: "Industries Covered" },
-  { value: "5+",    label: "Live Data Sources" },
+  { value: "310+", label: "US Cities Analyzed" },
+  { value: "50+",  label: "Industries Covered" },
+  { value: "5+",   label: "Live Data Sources" },
 ];
 
 const sources = [
@@ -18,72 +18,104 @@ const sources = [
 export default function Hero() {
   return (
     <>
-      {/* Main hero */}
-      <section className="relative pt-32 pb-24 px-6 bg-white overflow-hidden">
-
-        {/* Dot grid background */}
-        <div className="hero-grid absolute inset-0 opacity-50" />
-
-        {/* Subtle gold line at top */}
+      {/* ── Hero ─────────────────────────────────────────────────────── */}
+      <section
+        className="grain relative pt-32 pb-28 px-6 overflow-hidden"
+        style={{
+          background: "linear-gradient(140deg, #06061a 0%, #12126B 50%, #080824 100%)",
+        }}
+      >
+        {/* Gold radial glow behind headline */}
         <div
-          className="absolute top-0 left-0 right-0 h-[3px]"
-          style={{ background: "linear-gradient(90deg, transparent, #F59E0B 40%, #F59E0B 60%, transparent)" }}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 50% at 50% 10%, rgba(245,158,11,0.10) 0%, transparent 70%)",
+          }}
+        />
+
+        {/* Subtle grid lines */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
         />
 
         <div className="relative max-w-5xl mx-auto text-center">
 
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-[var(--color-muted)] text-[var(--color-navy)] text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-10 border border-[var(--color-border)]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold)] shrink-0" />
-            US Market Intelligence Platform
+          {/* Eyebrow */}
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="h-px w-8 bg-[var(--color-gold)] opacity-60" />
+            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-gold)] opacity-80">
+              Business Intelligence for Entrepreneurs
+            </span>
+            <div className="h-px w-8 bg-[var(--color-gold)] opacity-60" />
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-[72px] font-extrabold leading-[1.04] tracking-tight text-[var(--color-navy)] mb-6">
-            Find the right business.<br />
-            <span className="relative inline-block">
-              Find the right location.
-              <span
-                className="absolute left-0 right-0 rounded-full"
-                style={{ bottom: "-4px", height: "4px", background: "var(--color-gold)", opacity: 0.7 }}
-              />
-            </span>
+          <h1 className="text-5xl md:text-[70px] font-extrabold leading-[1.05] tracking-tight text-white mb-6">
+            Start your business<br />
+            <span style={{ color: "var(--color-gold)" }}>with the right data.</span>
           </h1>
 
           {/* Subtext */}
-          <p className="text-lg md:text-xl text-[var(--color-slate)] max-w-2xl mx-auto mb-12 leading-relaxed">
-            Neur turns US Census, labor market, and local business data into a
-            personalized report — so you can start your business with clarity,
-            not guesswork.
+          <p
+            className="text-base md:text-lg max-w-xl mx-auto mb-12 leading-relaxed"
+            style={{ color: "rgba(255,255,255,0.60)" }}
+          >
+            Neur analyzes US market, demographic, and labor data to give you a
+            personalized feasibility report — so you can make confident decisions
+            before you risk a dollar.
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-20">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-20">
             <Link
               href="/sign-up"
-              className="inline-flex items-center justify-center gap-2 bg-[var(--color-navy)] text-white font-bold px-8 py-4 rounded-xl text-base hover:bg-[var(--color-navy-light)] transition-colors"
-              style={{ boxShadow: "0 4px 24px rgba(18,18,107,0.18)" }}
+              className="inline-flex items-center gap-2 font-bold px-8 py-4 rounded-xl text-sm transition-all"
+              style={{
+                background: "var(--color-gold)",
+                color: "var(--color-navy)",
+                boxShadow: "0 4px 28px rgba(245,158,11,0.35)",
+              }}
             >
-              Start for Free <ArrowRight size={16} />
+              Start for Free <ArrowRight size={15} />
             </Link>
             <Link
               href="#how-it-works"
-              className="inline-flex items-center justify-center gap-2 border border-[var(--color-border)] text-[var(--color-navy)] font-semibold px-8 py-4 rounded-xl text-base hover:bg-[var(--color-muted)] transition-colors"
+              className="inline-flex items-center gap-2 font-semibold px-8 py-4 rounded-xl text-sm transition-all"
+              style={{
+                color: "rgba(255,255,255,0.75)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.05)",
+              }}
             >
               See How It Works
             </Link>
           </div>
 
           {/* Stat cards */}
-          <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
+          <div className="grid grid-cols-3 gap-3 max-w-sm mx-auto">
             {stats.map(({ value, label }) => (
               <div
                 key={label}
-                className="bg-white rounded-2xl p-5 border border-[var(--color-border)]"
-                style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+                className="rounded-2xl p-4"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  backdropFilter: "blur(8px)",
+                }}
               >
-                <div className="text-2xl font-extrabold text-[var(--color-navy)]">{value}</div>
-                <div className="text-[11px] text-[var(--color-slate)] mt-1 font-medium leading-tight">{label}</div>
+                <div className="text-2xl font-extrabold text-white">{value}</div>
+                <div
+                  className="text-[11px] font-medium mt-0.5 leading-tight"
+                  style={{ color: "rgba(255,255,255,0.45)" }}
+                >
+                  {label}
+                </div>
               </div>
             ))}
           </div>
@@ -91,15 +123,29 @@ export default function Hero() {
         </div>
       </section>
 
-      {/* Data sources trust bar */}
-      <div className="bg-[var(--color-muted)] border-y border-[var(--color-border)] py-5 px-6 overflow-hidden">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-8 text-center">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-slate)] shrink-0">
+      {/* ── Trust bar ────────────────────────────────────────────────── */}
+      <div
+        style={{
+          background: "#0a0a20",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+        className="py-5 px-6"
+      >
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-8 text-center">
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.18em] shrink-0"
+            style={{ color: "rgba(255,255,255,0.30)" }}
+          >
             Powered by
           </span>
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-1">
+          <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-1">
             {sources.map((s) => (
-              <span key={s} className="text-xs font-semibold text-[var(--color-slate)] opacity-70">
+              <span
+                key={s}
+                className="text-[11px] font-semibold"
+                style={{ color: "rgba(255,255,255,0.35)" }}
+              >
                 {s}
               </span>
             ))}
