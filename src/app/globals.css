@@ -34,6 +34,7 @@ body {
 .grain {
   position: relative;
   isolation: isolate;
+  overflow: hidden;
 }
 .grain::after {
   content: '';
