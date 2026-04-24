@@ -50,15 +50,15 @@ export default function Hero() {
           <div className="flex items-center justify-center gap-3 mb-8">
             <div className="h-px w-8 bg-[var(--color-gold)] opacity-60" />
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-gold)] opacity-80">
-              Business Intelligence for Entrepreneurs
+              Market Intelligence for Entrepreneurs
             </span>
             <div className="h-px w-8 bg-[var(--color-gold)] opacity-60" />
           </div>
 
           {/* Headline */}
           <h1 className="text-5xl md:text-[70px] font-extrabold leading-[1.05] tracking-tight text-white mb-6">
-            Start your business<br />
-            <span style={{ color: "var(--color-gold)" }}>with the right data.</span>
+            Launch with clarity,<br />
+            <span style={{ color: "var(--color-gold)" }}>Grow with confidence.</span>
           </h1>
 
           {/* Subtext */}
@@ -66,9 +66,8 @@ export default function Hero() {
             className="text-base md:text-lg max-w-xl mx-auto mb-12 leading-relaxed"
             style={{ color: "rgba(255,255,255,0.60)" }}
           >
-            Neur analyzes US market, demographic, and labor data to give you a
-            personalized feasibility report — so you can make confident decisions
-            before you risk a dollar.
+            Neur delivers continuous market, demographic, and labor insights
+            tailored to your sector.
           </p>
 
           {/* CTAs */}

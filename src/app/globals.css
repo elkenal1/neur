@@ -19,6 +19,11 @@
   --color-border:    #E2E8F0;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);

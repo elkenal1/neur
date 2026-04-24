@@ -11,7 +11,7 @@ export default function AboutPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-24">
+      <main className="pt-16">
 
         {/* Hero */}
         <section className="grain text-white py-20 px-6" style={{ background: "linear-gradient(140deg, #06061a 0%, #12126B 55%, #080824 100%)" }}>

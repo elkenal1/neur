@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, Settings, LogOut } from 'lucide-react'
+import { ChevronDown, Settings, LogOut, Menu } from 'lucide-react'
 
 const PAGE_TITLES: { path: string; label: string; exact?: boolean }[] = [
   { path: '/dashboard',         label: 'Dashboard',          exact: true },
@@ -25,9 +25,10 @@ interface Props {
   userName: string
   userEmail: string
   plan: string
+  onMenuOpen?: () => void
 }
 
-export default function DashboardHeader({ userName, userEmail, plan }: Props) {
+export default function DashboardHeader({ userName, userEmail, plan, onMenuOpen }: Props) {
   const pathname  = usePathname()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -48,8 +49,18 @@ export default function DashboardHeader({ userName, userEmail, plan }: Props) {
   }, [])
 
   return (
-    <header className="h-14 bg-white border-b border-[var(--color-border)] flex items-center justify-between px-8 shrink-0 sticky top-0 z-20">
-      <span className="text-sm font-bold text-[var(--color-navy)]">{pageTitle}</span>
+    <header className="h-14 bg-white border-b border-[var(--color-border)] flex items-center justify-between px-4 md:px-8 shrink-0 sticky top-0 z-20">
+      <div className="flex items-center gap-3">
+        {/* Hamburger — mobile only */}
+        <button
+          className="md:hidden text-[var(--color-navy)] hover:text-[var(--color-navy-light)] transition-colors"
+          onClick={onMenuOpen}
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+        <span className="text-sm font-bold text-[var(--color-navy)]">{pageTitle}</span>
+      </div>
 
       <div ref={ref} className="relative">
         {/* Avatar button */}

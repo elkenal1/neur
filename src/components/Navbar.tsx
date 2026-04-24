@@ -13,19 +13,30 @@ export default async function Navbar() {
       className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md"
       style={{ background: 'rgba(6,6,26,0.85)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
     >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <Image src="/neurlogo.png" alt="Neur" width={26} height={26} className="object-contain invert" />
           <span className="text-lg font-extrabold text-white tracking-tight">NEUR</span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
-          <Link href="#how-it-works" className="hover:text-white transition-colors">How It Works</Link>
-          <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
-          <Link href="/about" className="hover:text-white transition-colors">About</Link>
+        {/* Desktop nav — absolutely centered */}
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-8 text-sm font-medium text-white/60">
+          {[
+            { href: "/#how-it-works", label: "How It Works" },
+            { href: "/#pricing",      label: "Pricing" },
+            { href: "/about",        label: "About" },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="relative py-1 hover:text-white transition-colors group"
+            >
+              {label}
+              <span className="absolute bottom-0 left-0 w-full h-px bg-[var(--color-gold)] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+            </Link>
+          ))}
         </nav>
 
         {/* Desktop CTA */}

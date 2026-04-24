@@ -100,47 +100,6 @@ function SignInForm() {
           <p className="text-sm text-white/50 mt-1">Sign in to your Neur account</p>
         </div>
 
-        {/* OAuth buttons */}
-        <div className="space-y-2 mb-5">
-          <button
-            onClick={() => handleOAuth('google')}
-            disabled={!!oauthLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
-            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
-          >
-            <GoogleIcon />
-            {oauthLoading === 'google' ? 'Redirecting...' : 'Continue with Google'}
-          </button>
-          <button
-            onClick={() => handleOAuth('facebook')}
-            disabled={!!oauthLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
-            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
-          >
-            <FacebookIcon />
-            {oauthLoading === 'facebook' ? 'Redirecting...' : 'Continue with Facebook'}
-          </button>
-          <button
-            onClick={() => handleOAuth('apple')}
-            disabled={!!oauthLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
-            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
-          >
-            <AppleIcon />
-            {oauthLoading === 'apple' ? 'Redirecting...' : 'Continue with Apple'}
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/10" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="px-2 text-white/30" style={{ background: 'transparent' }}>or</span>
-          </div>
-        </div>
-
         {/* Email/password form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -194,6 +153,47 @@ function SignInForm() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
+        {/* Divider */}
+        <div className="relative my-5">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/10" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="px-2 text-white/30" style={{ background: 'transparent' }}>or</span>
+          </div>
+        </div>
+
+        {/* OAuth buttons */}
+        <div className="space-y-2">
+          <button
+            onClick={() => handleOAuth('google')}
+            disabled={!!oauthLoading}
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <GoogleIcon />
+            {oauthLoading === 'google' ? 'Redirecting...' : 'Continue with Google'}
+          </button>
+          <button
+            onClick={() => handleOAuth('facebook')}
+            disabled={!!oauthLoading}
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <FacebookIcon />
+            {oauthLoading === 'facebook' ? 'Redirecting...' : 'Continue with Facebook'}
+          </button>
+          <button
+            onClick={() => handleOAuth('apple')}
+            disabled={!!oauthLoading}
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-colors disabled:opacity-60"
+            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <AppleIcon />
+            {oauthLoading === 'apple' ? 'Redirecting...' : 'Continue with Apple'}
+          </button>
+        </div>
 
         <p className="text-center text-sm text-white/40 mt-6">
           Don&apos;t have an account?{" "}

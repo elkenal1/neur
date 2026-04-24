@@ -18,8 +18,8 @@ export default function NavbarMobileMenu({ isLoggedIn }: { isLoggedIn: boolean }
           className="md:hidden absolute top-16 left-0 right-0 px-6 py-5 flex flex-col gap-4 text-sm font-medium"
           style={{ background: 'rgba(6,6,26,0.97)', borderTop: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)' }}
         >
-          <Link href="#how-it-works" onClick={() => setOpen(false)} className="text-white/60 hover:text-white transition-colors">How It Works</Link>
-          <Link href="#pricing" onClick={() => setOpen(false)} className="text-white/60 hover:text-white transition-colors">Pricing</Link>
+          <Link href="/#how-it-works" onClick={() => setOpen(false)} className="text-white/60 hover:text-white transition-colors">How It Works</Link>
+          <Link href="/#pricing" onClick={() => setOpen(false)} className="text-white/60 hover:text-white transition-colors">Pricing</Link>
           <Link href="/about" onClick={() => setOpen(false)} className="text-white/60 hover:text-white transition-colors">About</Link>
           <hr className="border-white/10" />
           {isLoggedIn ? (
