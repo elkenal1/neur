@@ -70,133 +70,162 @@ export default function ProfileForms({ name: initialName, email, plan, isEmailUs
     }
   }
 
-  return (
-    <div className="p-8 max-w-2xl mx-auto space-y-8">
+  const inputCls = "w-full px-4 py-2.5 rounded-xl text-sm outline-none transition bg-white border border-[var(--color-border)] text-[var(--color-navy)] focus:border-[var(--color-navy)] focus:ring-2 focus:ring-[var(--color-navy)]/10"
 
-      {/* Profile header */}
-      <div className="flex items-center gap-5">
-        <div className="w-16 h-16 rounded-full bg-[var(--color-navy)] text-white text-2xl font-bold flex items-center justify-center shrink-0">
-          {initial}
-        </div>
-        <div>
-          <h1 className="text-xl font-extrabold text-[var(--color-navy)]">{name || email}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-sm text-[var(--color-slate)]">{email}</span>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${planMeta.color}`}>
-              {planMeta.label}
-            </span>
+  return (
+    <div className="max-w-2xl mx-auto">
+
+      {/* Profile banner */}
+      <div
+        className="grain text-white px-8 py-8 mb-0"
+        style={{ background: 'linear-gradient(135deg, #06061a 0%, #12126B 60%, #1a1a8a 100%)' }}
+      >
+        <div className="flex items-center gap-5">
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-extrabold shrink-0"
+            style={{ background: 'var(--color-gold)', color: 'var(--color-navy)' }}
+          >
+            {initial}
+          </div>
+          <div>
+            <h1 className="text-xl font-extrabold text-white">{name || email}</h1>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-sm text-white/50">{email}</span>
+              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${planMeta.color}`}>
+                {planMeta.label}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Account info */}
-      <section className="bg-white rounded-2xl border border-[var(--color-border)] p-6">
-        <h2 className="text-base font-bold text-[var(--color-navy)] mb-5">Account Information</h2>
-        <form onSubmit={saveName} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1">Full Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-              className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              disabled
-              className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm bg-[var(--color-muted)] text-[var(--color-slate)] cursor-not-allowed"
-            />
-            <p className="text-xs text-[var(--color-slate)] mt-1">Email cannot be changed here. Contact support if needed.</p>
-          </div>
-          <button
-            type="submit"
-            disabled={nameStatus === 'saving'}
-            className="bg-[var(--color-navy)] text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-60"
-          >
-            {nameStatus === 'saving' ? 'Saving...' : nameStatus === 'saved' ? '✓ Saved' : 'Save Changes'}
-          </button>
-        </form>
-      </section>
+      <div className="p-8 space-y-6">
 
-      {/* Password — only for email/password accounts */}
-      {isEmailUser && (
-        <section className="bg-white rounded-2xl border border-[var(--color-border)] p-6">
-          <h2 className="text-base font-bold text-[var(--color-navy)] mb-1">Change Password</h2>
-          <p className="text-sm text-[var(--color-slate)] mb-5">Choose a strong password of at least 8 characters.</p>
-          <form onSubmit={changePassword} className="space-y-4">
+        {/* Account info */}
+        <section
+          className="bg-white rounded-2xl border border-[var(--color-border)] p-6"
+          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
+        >
+          <h2 className="text-base font-bold text-[var(--color-navy)] mb-5">Account Information</h2>
+          <form onSubmit={saveName} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1">New Password</label>
+              <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1.5">Full Name</label>
               <input
-                type="password"
-                value={newPw}
-                onChange={(e) => setNewPw(e.target.value)}
-                minLength={8}
-                placeholder="At least 8 characters"
-                className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className={inputCls}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1">Confirm New Password</label>
+              <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1.5">Email</label>
               <input
-                type="password"
-                value={confirmPw}
-                onChange={(e) => setConfirmPw(e.target.value)}
-                placeholder="Repeat new password"
-                className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
+                type="email"
+                value={email}
+                disabled
+                className="w-full px-4 py-2.5 rounded-xl text-sm cursor-not-allowed"
+                style={{ background: '#F7F4EF', border: '1px solid var(--color-border)', color: 'var(--color-slate)' }}
               />
+              <p className="text-xs text-[var(--color-slate)] mt-1">Email cannot be changed here. Contact support if needed.</p>
             </div>
-            {pwError && (
-              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">{pwError}</div>
-            )}
             <button
               type="submit"
-              disabled={pwStatus === 'saving' || !newPw || !confirmPw}
-              className="bg-[var(--color-navy)] text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-[var(--color-navy-light)] transition-colors disabled:opacity-60"
+              disabled={nameStatus === 'saving'}
+              className="text-sm font-bold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-60"
+              style={{ background: 'var(--color-navy)', color: 'white' }}
             >
-              {pwStatus === 'saving' ? 'Updating...' : pwStatus === 'saved' ? '✓ Password Updated' : 'Update Password'}
+              {nameStatus === 'saving' ? 'Saving...' : nameStatus === 'saved' ? '✓ Saved' : 'Save Changes'}
             </button>
           </form>
         </section>
-      )}
 
-      {/* Subscription */}
-      <section className="bg-white rounded-2xl border border-[var(--color-border)] p-6">
-        <h2 className="text-base font-bold text-[var(--color-navy)] mb-1">Subscription</h2>
-        <p className="text-sm text-[var(--color-slate)] mb-5">Manage your billing, payment method, and plan.</p>
-
-        <div className="flex items-center justify-between bg-[var(--color-muted)] rounded-xl px-5 py-4 mb-5">
-          <div>
-            <div className="text-sm font-semibold text-[var(--color-navy)]">Current Plan</div>
-            <div className={`inline-block mt-1 text-xs font-bold px-2.5 py-0.5 rounded-full ${planMeta.color}`}>
-              {planMeta.label}
-            </div>
-          </div>
-          {plan === 'free' && (
-            <a
-              href="/sign-up?plan=monthly"
-              className="text-sm font-bold bg-[var(--color-navy)] text-white px-4 py-2 rounded-xl hover:bg-[var(--color-navy-light)] transition-colors"
-            >
-              Upgrade
-            </a>
-          )}
-        </div>
-
-        {hasStripe && plan !== 'free' && (
-          <button
-            onClick={openBillingPortal}
-            disabled={billingLoading}
-            className="text-sm font-semibold text-[var(--color-navy)] border border-[var(--color-border)] px-5 py-2.5 rounded-xl hover:bg-[var(--color-muted)] transition-colors disabled:opacity-60"
+        {/* Password */}
+        {isEmailUser && (
+          <section
+            className="bg-white rounded-2xl border border-[var(--color-border)] p-6"
+            style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
           >
-            {billingLoading ? 'Opening...' : 'Manage Billing & Payment'}
-          </button>
+            <h2 className="text-base font-bold text-[var(--color-navy)] mb-1">Change Password</h2>
+            <p className="text-sm text-[var(--color-slate)] mb-5">Choose a strong password of at least 8 characters.</p>
+            <form onSubmit={changePassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1.5">New Password</label>
+                <input
+                  type="password"
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                  minLength={8}
+                  placeholder="At least 8 characters"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1.5">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPw}
+                  onChange={(e) => setConfirmPw(e.target.value)}
+                  placeholder="Repeat new password"
+                  className={inputCls}
+                />
+              </div>
+              {pwError && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">{pwError}</div>
+              )}
+              <button
+                type="submit"
+                disabled={pwStatus === 'saving' || !newPw || !confirmPw}
+                className="text-sm font-bold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-60"
+                style={{ background: 'var(--color-navy)', color: 'white' }}
+              >
+                {pwStatus === 'saving' ? 'Updating...' : pwStatus === 'saved' ? '✓ Password Updated' : 'Update Password'}
+              </button>
+            </form>
+          </section>
         )}
-      </section>
 
+        {/* Subscription */}
+        <section
+          className="bg-white rounded-2xl border border-[var(--color-border)] p-6"
+          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
+        >
+          <h2 className="text-base font-bold text-[var(--color-navy)] mb-1">Subscription</h2>
+          <p className="text-sm text-[var(--color-slate)] mb-5">Manage your billing, payment method, and plan.</p>
+
+          <div
+            className="flex items-center justify-between rounded-xl px-5 py-4 mb-5"
+            style={{ background: '#F7F4EF' }}
+          >
+            <div>
+              <div className="text-sm font-semibold text-[var(--color-navy)]">Current Plan</div>
+              <div className={`inline-block mt-1 text-xs font-bold px-2.5 py-0.5 rounded-full ${planMeta.color}`}>
+                {planMeta.label}
+              </div>
+            </div>
+            {plan === 'free' && (
+              <a
+                href="/sign-up?plan=monthly"
+                className="text-sm font-bold px-4 py-2 rounded-xl transition-colors"
+                style={{ background: 'var(--color-gold)', color: 'var(--color-navy)' }}
+              >
+                Upgrade
+              </a>
+            )}
+          </div>
+
+          {hasStripe && plan !== 'free' && (
+            <button
+              onClick={openBillingPortal}
+              disabled={billingLoading}
+              className="text-sm font-semibold border border-[var(--color-border)] px-5 py-2.5 rounded-xl hover:bg-[var(--color-muted)] transition-colors disabled:opacity-60 text-[var(--color-navy)]"
+            >
+              {billingLoading ? 'Opening...' : 'Manage Billing & Payment'}
+            </button>
+          )}
+        </section>
+
+      </div>
     </div>
   )
 }

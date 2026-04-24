@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-[var(--color-navy)] text-white/60 py-12 px-6">
+    <footer className="grain text-white/60 py-14 px-6" style={{ background: 'linear-gradient(180deg, #06061a 0%, #0a0a20 100%)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between gap-8 mb-10">
 

@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import MapWrapper from "@/components/map/MapWrapper";
 
@@ -120,29 +119,26 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 3.5rem)' }}>
 
-      {/* Top bar */}
-      <div className="shrink-0 bg-white border-b border-[var(--color-border)] px-6 h-14 flex items-center justify-between z-50">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Image src="/neurlogo.png" alt="Neur" width={22} height={22} className="object-contain" />
-            <span className="text-sm font-bold text-[var(--color-navy)]">NEUR</span>
-          </Link>
-          <span className="text-[var(--color-border)]">/</span>
-          <Link href="/dashboard" className="text-sm text-[var(--color-slate)] hover:text-[var(--color-navy)] flex items-center gap-1">
-            <ArrowLeft size={14} /> Dashboard
-          </Link>
-          <span className="text-[var(--color-border)]">/</span>
-          <span className="text-sm font-medium text-[var(--color-navy)]">Location Map</span>
-        </div>
+      {/* Slim context bar */}
+      <div
+        className="shrink-0 px-6 h-10 flex items-center justify-between z-10"
+        style={{ background: '#F7F4EF', borderBottom: '1px solid var(--color-border)' }}
+      >
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-slate)] hover:text-[var(--color-navy)] transition-colors"
+        >
+          <ArrowLeft size={12} /> Dashboard
+        </Link>
         <div className="flex items-center gap-2 text-xs text-[var(--color-slate)]">
-          <span className="font-medium text-[var(--color-navy)]">{state}</span>
-          {industry && <><span>·</span><span className="font-medium text-[var(--color-navy)]">{industry}</span></>}
+          <span className="font-semibold text-[var(--color-navy)]">{state}</span>
+          {industry && <><span className="text-[var(--color-border)]">·</span><span className="font-medium">{industry}</span></>}
         </div>
       </div>
 
-      {/* Map (fills remaining height) */}
+      {/* Map fills remaining height */}
       <div className="flex-1 overflow-hidden">
         <MapWrapper
           defaultLat={lat}
@@ -151,7 +147,6 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
           industry={industry}
           isPaid={isPaid}
         />
-
       </div>
 
     </div>

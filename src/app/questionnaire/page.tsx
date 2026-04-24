@@ -72,58 +72,74 @@ export default function Questionnaire() {
   const isLast = step === STEPS.length - 1;
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)]">
-
+    <div
+      className="grain min-h-screen"
+      style={{ background: 'linear-gradient(160deg, #06061a 0%, #12126B 55%, #080824 100%)' }}
+    >
       {/* Top bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[var(--color-border)] px-6 h-14 flex items-center justify-between">
+      <div
+        className="fixed top-0 left-0 right-0 z-50 px-6 h-14 flex items-center justify-between backdrop-blur-md"
+        style={{ background: 'rgba(6,6,26,0.8)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+      >
         <Link href="/dashboard" className="flex items-center gap-2">
-          <Image src="/neurlogo.png" alt="Neur" width={24} height={24} className="object-contain" />
-          <span className="text-sm font-bold text-[var(--color-navy)] tracking-tight">NEUR</span>
+          <Image src="/neurlogo.png" alt="Neur" width={22} height={22} className="object-contain invert" />
+          <span className="text-sm font-bold text-white tracking-tight">NEUR</span>
         </Link>
-        <span className="text-xs text-[var(--color-slate)] font-medium">
+        <span className="text-xs text-white/40 font-medium">
           Step {step + 1} of {STEPS.length}
         </span>
       </div>
 
       {/* Progress bar */}
-      <div className="fixed top-14 left-0 right-0 z-40 h-1 bg-[var(--color-border)]">
+      <div className="fixed top-14 left-0 right-0 z-40 h-0.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
         <div
-          className="h-full bg-[var(--color-navy)] transition-all duration-500"
-          style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
+          className="h-full transition-all duration-500"
+          style={{ width: `${((step + 1) / STEPS.length) * 100}%`, background: 'var(--color-gold)' }}
         />
       </div>
 
-      {/* Step indicators */}
-      <div className="pt-24 pb-4 px-6">
+      {/* Step indicators + content */}
+      <div className="pt-24 pb-12 px-6">
         <div className="max-w-2xl mx-auto">
+
+          {/* Step dots */}
           <div className="flex items-center justify-between mb-8">
             {STEPS.map((s, i) => (
-              <div key={i} className="flex flex-col items-center gap-1">
+              <div key={i} className="flex flex-col items-center gap-1.5">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                    i < step
-                      ? "bg-[var(--color-emerald)] text-white"
-                      : i === step
-                      ? "bg-[var(--color-navy)] text-white"
-                      : "bg-[var(--color-border)] text-[var(--color-slate)]"
-                  }`}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all"
+                  style={{
+                    background: i < step ? 'var(--color-gold)' : i === step ? 'white' : 'rgba(255,255,255,0.1)',
+                    color: i < step ? 'var(--color-navy)' : i === step ? 'var(--color-navy)' : 'rgba(255,255,255,0.3)',
+                  }}
                 >
-                  {i < step ? <Check size={14} /> : i + 1}
+                  {i < step ? <Check size={13} /> : i + 1}
                 </div>
-                <span className={`text-[10px] font-medium hidden sm:block ${i === step ? "text-[var(--color-navy)]" : "text-[var(--color-slate)]"}`}>
+                <span
+                  className="text-[10px] font-medium hidden sm:block"
+                  style={{ color: i === step ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)' }}
+                >
                   {s.label}
                 </span>
               </div>
             ))}
           </div>
 
-          {/* Step content */}
-          <div className="bg-white rounded-2xl border border-[var(--color-border)] shadow-sm p-8 min-h-[420px]">
+          {/* Card */}
+          <div
+            className="rounded-2xl p-8 min-h-[420px]"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
+            }}
+          >
             {stepComponents[step]}
           </div>
 
           {error && (
-            <div className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+            <div className="mt-4 text-sm text-red-300 bg-red-900/30 border border-red-500/30 rounded-xl px-4 py-3">
               {error}
             </div>
           )}
@@ -134,7 +150,8 @@ export default function Questionnaire() {
               type="button"
               onClick={() => setStep((s) => s - 1)}
               disabled={step === 0}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--color-border)] text-sm font-semibold text-[var(--color-slate)] hover:border-[var(--color-navy)] hover:text-[var(--color-navy)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}
             >
               <ChevronLeft size={16} /> Back
             </button>
@@ -144,15 +161,17 @@ export default function Questionnaire() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex items-center gap-2 px-8 py-2.5 rounded-xl bg-[var(--color-gold)] text-[var(--color-navy)] font-bold text-sm hover:bg-[var(--color-gold-light)] disabled:opacity-60 transition-all shadow-md"
+                className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-bold text-sm disabled:opacity-60 transition-all"
+                style={{ background: 'var(--color-gold)', color: 'var(--color-navy)', boxShadow: '0 4px 20px rgba(245,158,11,0.3)' }}
               >
-                {submitting ? "Submitting..." : "Get My Analysis ✨"}
+                {submitting ? "Submitting..." : "Get My Analysis"}
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => setStep((s) => s + 1)}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[var(--color-navy)] text-white font-bold text-sm hover:bg-[var(--color-navy-light)] transition-all"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all"
+                style={{ background: 'var(--color-gold)', color: 'var(--color-navy)' }}
               >
                 Next <ChevronRight size={16} />
               </button>
