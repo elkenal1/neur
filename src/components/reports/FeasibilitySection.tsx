@@ -1,10 +1,11 @@
 import { type FeasibilityScore } from '@/lib/feasibility'
 import {
-  TrendingUp, Users, MapPin, DollarSign, User,
+  TrendingUp,
   CheckCircle, AlertTriangle, Lock, Lightbulb,
 } from 'lucide-react'
 import Link from 'next/link'
 import RecalculateButton from './RecalculateButton'
+import PillarCarousel from './PillarCarousel'
 
 // ─── Score ring ───────────────────────────────────────────────────────────────
 
@@ -78,78 +79,6 @@ function BlurredRing({ score }: { score: number }) {
   )
 }
 
-// ─── Pillar card ──────────────────────────────────────────────────────────────
-
-const PILLAR_META: Record<string, { label: string; Icon: React.ElementType }> = {
-  market:      { label: 'Market Opportunity',  Icon: TrendingUp },
-  competition: { label: 'Competition',          Icon: Users },
-  location:    { label: 'Location Viability',   Icon: MapPin },
-  financial:   { label: 'Financial Readiness',  Icon: DollarSign },
-  personal:    { label: 'Personal Readiness',   Icon: User },
-}
-
-function PillarCard({
-  name,
-  pillar,
-}: {
-  name: string
-  pillar: { score: number; weighted_score: number; highlights: string[]; insight: string }
-}) {
-  const meta = PILLAR_META[name]
-  if (!meta) return null
-  const { label, Icon } = meta
-  const color = scoreColor((pillar.score / 20) * 100)
-  const barPct = (pillar.score / 20) * 100
-
-  return (
-    <div className="bg-white rounded-2xl border border-[var(--color-border)] p-5 flex flex-col gap-3">
-      {/* Header row */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="bg-[var(--color-navy)] text-white rounded-lg p-1.5">
-            <Icon size={14} />
-          </div>
-          <span className="font-bold text-sm text-[var(--color-navy)]">{label}</span>
-        </div>
-        <span className="text-xs font-bold" style={{ color }}>{pillar.score}/20</span>
-      </div>
-
-      {/* Score bar */}
-      <div>
-        <div className="h-2 bg-[var(--color-muted)] rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full"
-            style={{ width: `${barPct}%`, backgroundColor: color }}
-          />
-        </div>
-        <div className="text-[11px] text-[var(--color-slate)] mt-1">
-          Weighted: <strong>{pillar.weighted_score} pts</strong>
-        </div>
-      </div>
-
-      {/* Highlights */}
-      {pillar.highlights.length > 0 && (
-        <ul className="space-y-1.5">
-          {pillar.highlights.map((h, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs text-[var(--color-foreground)]">
-              <span
-                className="mt-1 shrink-0 w-2 h-2 rounded-full"
-                style={{ backgroundColor: color }}
-              />
-              {h}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* Insight */}
-      <p className="text-xs text-[var(--color-slate)] italic border-t border-[var(--color-border)] pt-2 mt-auto leading-relaxed">
-        {pillar.insight}
-      </p>
-    </div>
-  )
-}
-
 // ─── Main section ─────────────────────────────────────────────────────────────
 
 export default function FeasibilitySection({
@@ -217,11 +146,7 @@ export default function FeasibilitySection({
       {/* Paid: Pillar Breakdown */}
       {isPaid && (
         <>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {(Object.keys(score.pillars) as Array<keyof typeof score.pillars>).map(name => (
-              <PillarCard key={name} name={name} pillar={score.pillars[name]} />
-            ))}
-          </div>
+          <PillarCarousel pillars={score.pillars} />
 
           {/* What's Working / Needs Attention */}
           <div className="grid sm:grid-cols-2 gap-4">

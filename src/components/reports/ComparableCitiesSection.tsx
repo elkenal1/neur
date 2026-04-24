@@ -2,10 +2,8 @@
 
 import { useState } from 'react'
 import type { ComparableCity } from '@/lib/comparableCities'
-import { MapPin, TrendingUp, Users, DollarSign, ChevronDown, ChevronUp } from 'lucide-react'
+import { MapPin, TrendingUp, Users, DollarSign, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
 import Link from 'next/link'
-
-// ─── UserCity shape passed from report page ───────────────────────────────────
 
 export interface UserCityData {
   name: string
@@ -17,16 +15,12 @@ export interface UserCityData {
   renter_pct: number | null
 }
 
-// ─── Similarity badge color ────────────────────────────────────────────────────
-
 function badgeStyle(similarity: number): { bg: string; text: string } {
   if (similarity >= 85) return { bg: 'bg-emerald-100', text: 'text-emerald-700' }
   if (similarity >= 70) return { bg: 'bg-blue-100',    text: 'text-blue-700' }
   if (similarity >= 55) return { bg: 'bg-amber-100',   text: 'text-amber-700' }
   return                       { bg: 'bg-slate-100',   text: 'text-slate-600' }
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmt(val: number | null, type: 'income' | 'age' | 'pct' | 'rent'): string {
   if (val === null || val === undefined) return 'N/A'
@@ -38,24 +32,18 @@ function fmt(val: number | null, type: 'income' | 'age' | 'pct' | 'rent'): strin
   }
 }
 
-// ─── Single city card ─────────────────────────────────────────────────────────
-
 function CityCard({
   city,
   industry,
   userCity,
-  isExpanded,
-  onToggle,
 }: {
   city: ComparableCity
   industry: string
   userCity: UserCityData
-  isExpanded: boolean
-  onToggle: () => void
 }) {
+  const [expanded, setExpanded] = useState(false)
   const badge = badgeStyle(city.similarity)
 
-  // Collapsed demographics mini-table — identical to before
   const rows: { label: string; value: string | null }[] = [
     { label: 'Median Income',  value: city.median_household_income ? `$${city.median_household_income.toLocaleString()}` : null },
     { label: 'Median Age',     value: city.median_age ? `${city.median_age} yrs` : null },
@@ -64,51 +52,50 @@ function CityCard({
     { label: 'Renters',        value: city.renter_pct ? `${city.renter_pct.toFixed(0)}%` : null },
   ].filter(r => r.value !== null)
 
-  // Comparison table rows
   const comparisonRows: { label: string; userVal: string; cityVal: string }[] = [
-    { label: 'Median Income',     userVal: fmt(userCity.median_household_income, 'income'), cityVal: fmt(city.median_household_income, 'income') },
-    { label: 'Median Age',        userVal: fmt(userCity.median_age, 'age'),                  cityVal: fmt(city.median_age, 'age') },
-    { label: 'Unemployment',      userVal: fmt(userCity.unemployment_rate, 'pct'),            cityVal: fmt(city.unemployment_rate, 'pct') },
-    { label: 'Median Rent',       userVal: fmt(userCity.median_rent, 'rent'),                 cityVal: fmt(city.median_rent !== null ? city.median_rent : null, 'rent') },
-    { label: 'College Educated',  userVal: fmt(userCity.bachelor_degree_pct, 'pct'),          cityVal: fmt(city.bachelor_degree_pct, 'pct') },
-    { label: 'Renters',           userVal: fmt(userCity.renter_pct, 'pct'),                   cityVal: fmt(city.renter_pct, 'pct') },
+    { label: 'Median Income',    userVal: fmt(userCity.median_household_income, 'income'), cityVal: fmt(city.median_household_income, 'income') },
+    { label: 'Median Age',       userVal: fmt(userCity.median_age, 'age'),                  cityVal: fmt(city.median_age, 'age') },
+    { label: 'Unemployment',     userVal: fmt(userCity.unemployment_rate, 'pct'),            cityVal: fmt(city.unemployment_rate, 'pct') },
+    { label: 'Median Rent',      userVal: fmt(userCity.median_rent, 'rent'),                 cityVal: fmt(city.median_rent, 'rent') },
+    { label: 'College Educated', userVal: fmt(userCity.bachelor_degree_pct, 'pct'),          cityVal: fmt(city.bachelor_degree_pct, 'pct') },
+    { label: 'Renters',          userVal: fmt(userCity.renter_pct, 'pct'),                   cityVal: fmt(city.renter_pct, 'pct') },
   ]
 
-  // Community profile
   const hasEthnicity = city.hispanic_pct != null || city.white_pct != null || city.black_pct != null || city.asian_pct != null
   const ethnicSum = (city.hispanic_pct ?? 0) + (city.white_pct ?? 0) + (city.black_pct ?? 0) + (city.asian_pct ?? 0)
   const other = parseFloat((100 - ethnicSum).toFixed(1))
 
   return (
-    <div className="bg-white rounded-2xl border border-[var(--color-border)] p-5 flex flex-col gap-4">
-      {/* Header — unchanged */}
-      <div className="flex items-start justify-between gap-2">
+    <div className="flex flex-col gap-4">
+
+      {/* City name + similarity badge */}
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="font-extrabold text-[var(--color-navy)] text-base leading-tight">{city.city}</div>
-          <div className="text-xs text-[var(--color-slate)] mt-0.5">{city.state}</div>
+          <div className="font-extrabold text-[var(--color-navy)] text-lg leading-tight">{city.city}</div>
+          <div className="text-sm text-[var(--color-slate)] mt-0.5">{city.state}</div>
         </div>
-        <div className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${badge.bg} ${badge.text}`}>
+        <div className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold ${badge.bg} ${badge.text}`}>
           {city.similarity}% match
         </div>
       </div>
 
-      {/* Shared facts — unchanged */}
+      {/* Shared facts */}
       {city.shared_facts.length > 0 && (
-        <ul className="space-y-1.5">
+        <ul className="space-y-2">
           {city.shared_facts.map((fact, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs text-[var(--color-foreground)]">
-              <TrendingUp size={11} className="text-[var(--color-navy)] shrink-0 mt-0.5" />
+            <li key={i} className="flex items-start gap-2 text-sm text-[var(--color-foreground)]">
+              <TrendingUp size={12} className="text-[var(--color-navy)] shrink-0 mt-0.5" />
               {fact}
             </li>
           ))}
         </ul>
       )}
 
-      {/* Demographics mini-table — unchanged */}
+      {/* Demographics mini-table */}
       {rows.length > 0 && (
-        <div className="border-t border-[var(--color-border)] pt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-[var(--color-border)] pt-3">
           {rows.map(r => (
-            <div key={r.label} className="flex justify-between items-baseline text-[11px]">
+            <div key={r.label} className="flex justify-between items-baseline text-xs">
               <span className="text-[var(--color-slate)]">{r.label}</span>
               <span className="font-semibold text-[var(--color-navy)]">{r.value}</span>
             </div>
@@ -116,21 +103,28 @@ function CityCard({
         </div>
       )}
 
-      {/* Explore on Map — unchanged */}
+      {/* Explore on map */}
       {city.latitude && city.longitude && (
         <Link
           href={`/dashboard/map?city=${encodeURIComponent(city.city)}&state=${encodeURIComponent(city.state)}&industry=${encodeURIComponent(industry)}`}
-          className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-navy)] hover:underline"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-navy)] hover:underline"
         >
           <MapPin size={11} /> Explore on Map
         </Link>
       )}
 
-      {/* ── Expanded content ───────────────────────────────────────────────── */}
-      {isExpanded && (
+      {/* Expand / collapse */}
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="flex items-center justify-center gap-1.5 text-xs font-medium text-[var(--color-slate)] hover:text-[var(--color-navy)] transition-colors border-t border-[var(--color-border)] pt-3"
+      >
+        {expanded ? <><ChevronUp size={13} /> Hide details</> : <><ChevronDown size={13} /> Side-by-side comparison + community profile</>}
+      </button>
+
+      {expanded && (
         <div className="flex flex-col gap-4 border-t border-[var(--color-border)] pt-4">
 
-          {/* Section A — Full Comparison Table */}
+          {/* Side-by-side table */}
           <div>
             <div className="text-[11px] font-bold text-[var(--color-navy)] uppercase tracking-wide mb-2">
               Side-by-Side Comparison
@@ -159,13 +153,13 @@ function CityCard({
             </table>
           </div>
 
-          {/* Section B — Community Profile */}
+          {/* Community profile */}
           {hasEthnicity && (
             <div>
               <div className="text-[11px] font-bold text-[var(--color-navy)] uppercase tracking-wide mb-2">
                 Community Profile — {city.city}
               </div>
-              <ul className="space-y-1.5 mb-3">
+              <ul className="space-y-1.5">
                 {city.hispanic_pct != null && (
                   <li className="flex justify-between text-[11px]">
                     <span className="text-[var(--color-slate)]">Hispanic or Latino</span>
@@ -197,30 +191,16 @@ function CityCard({
                   </li>
                 )}
               </ul>
-              <p className="text-[10px] text-[var(--color-slate)] leading-relaxed italic">
+              <p className="text-[10px] text-[var(--color-slate)] leading-relaxed italic mt-2">
                 Community profile data is provided for informational context only and is not used to generate recommendations or scores.
               </p>
             </div>
           )}
         </div>
       )}
-
-      {/* Expand / Collapse trigger */}
-      <button
-        onClick={onToggle}
-        className="flex items-center justify-center gap-1 text-xs text-[var(--color-slate)] hover:text-[var(--color-navy)] transition-colors mt-auto pt-1 border-t border-[var(--color-border)]"
-      >
-        {isExpanded ? (
-          <><ChevronUp size={13} /> Collapse</>
-        ) : (
-          <><ChevronDown size={13} /> Explore Details</>
-        )}
-      </button>
     </div>
   )
 }
-
-// ─── Main export ──────────────────────────────────────────────────────────────
 
 export default function ComparableCitiesSection({
   cities,
@@ -231,20 +211,19 @@ export default function ComparableCitiesSection({
   industry: string
   userCity: UserCityData
 }) {
-  const [showAll, setShowAll] = useState(false)
-  const [expandedKey, setExpandedKey] = useState<string | null>(null)
+  const [index, setIndex] = useState(0)
+  const total = cities.length
 
-  const visible = showAll ? cities : cities.slice(0, 3)
-  const remaining = cities.length - 3
+  function prev() { setIndex(i => (i - 1 + total) % total) }
+  function next() { setIndex(i => (i + 1) % total) }
 
-  function handleToggle(key: string) {
-    setExpandedKey(prev => (prev === key ? null : key))
-  }
+  const city = cities[index]
 
   return (
-    <div className="bg-white rounded-2xl border border-[var(--color-border)] p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+    <div className="bg-white rounded-2xl border border-[var(--color-border)] overflow-hidden" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+
+      {/* Section header */}
+      <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--color-border)]">
         <div className="flex items-center gap-3">
           <div className="bg-[var(--color-navy)] text-white rounded-xl p-2">
             <Users size={16} />
@@ -261,41 +240,56 @@ export default function ComparableCitiesSection({
         </span>
       </div>
 
-      {/* City cards grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {visible.map(city => {
-          const key = `${city.city}-${city.state}`
-          return (
-            <CityCard
-              key={key}
-              city={city}
-              industry={industry}
-              userCity={userCity}
-              isExpanded={expandedKey === key}
-              onToggle={() => handleToggle(key)}
-            />
-          )
-        })}
+      {/* City card body */}
+      <div className="px-6 py-5 min-h-[220px]">
+        <CityCard city={city} industry={industry} userCity={userCity} key={`${city.city}-${city.state}`} />
       </div>
 
-      {/* Show more */}
-      {!showAll && remaining > 0 && (
+      {/* Navigation footer */}
+      <div
+        className="flex items-center justify-between px-6 py-3 border-t border-[var(--color-border)]"
+        style={{ background: '#F7F4EF' }}
+      >
         <button
-          onClick={() => setShowAll(true)}
-          className="mt-4 w-full text-sm text-[var(--color-slate)] hover:text-[var(--color-navy)] font-medium transition-colors"
+          onClick={prev}
+          className="flex items-center gap-1 text-xs font-semibold text-[var(--color-slate)] hover:text-[var(--color-navy)] transition-colors"
         >
-          Show {remaining} more {remaining === 1 ? 'city' : 'cities'} →
+          <ChevronLeft size={15} /> Prev
         </button>
-      )}
+
+        {/* Dot indicators */}
+        <div className="flex items-center gap-1.5">
+          {cities.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              className="rounded-full transition-all duration-200"
+              style={{
+                width:  i === index ? 18 : 6,
+                height: 6,
+                background: i === index ? 'var(--color-navy)' : '#D1CDCA',
+              }}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={next}
+          className="flex items-center gap-1 text-xs font-semibold text-[var(--color-slate)] hover:text-[var(--color-navy)] transition-colors"
+        >
+          Next <ChevronRight size={15} />
+        </button>
+      </div>
 
       {/* Tip */}
-      <div className="mt-4 flex items-start gap-2 bg-[var(--color-muted)] rounded-xl px-4 py-3 text-xs text-[var(--color-slate)]">
+      <div className="mx-6 mb-5 flex items-start gap-2 rounded-xl px-4 py-3 text-xs text-[var(--color-slate)]" style={{ background: '#F7F4EF' }}>
         <DollarSign size={12} className="shrink-0 mt-0.5 text-[var(--color-navy)]" />
         <span>
           These cities share similar income levels, age distribution, and workforce profiles to your target market.
-          Expand any city to compare demographics side by side and explore the community profile.
+          Expand any city to compare demographics side by side.
         </span>
       </div>
+
     </div>
   )
 }
