@@ -127,8 +127,11 @@ export default function Questionnaire() {
 
           {/* Card */}
           <div
-            className="rounded-2xl p-8 min-h-[420px] bg-white"
+            className="rounded-2xl p-8 min-h-[420px]"
             style={{
+              background: 'rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.1)',
               boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
             }}
           >

@@ -16,20 +16,26 @@ const US_STATES = [
 
 const OPERATION_TYPES = [
   { value: "physical", label: "Physical Location", desc: "Storefront, office, or facility" },
-  { value: "online", label: "Online / Remote", desc: "No physical location needed" },
-  { value: "both", label: "Both", desc: "Physical presence + online" },
+  { value: "online",   label: "Online / Remote",   desc: "No physical location needed" },
+  { value: "both",     label: "Both",               desc: "Physical presence + online" },
 ];
+
+const sel = "border-[var(--color-gold)] bg-white/10 text-white";
+const unsel = "border-white/15 text-white/70 hover:border-white/40 hover:bg-white/5";
+const labelCls = "block text-sm font-semibold text-white/80 mb-2";
+const inputCls = "w-full px-4 py-2.5 rounded-lg text-sm text-white placeholder-white/30 outline-none transition";
+const inputStyle = { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' };
 
 export default function StepLocation({ data, onChange }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-extrabold text-[var(--color-navy)] mb-1">Where do you want to operate?</h2>
-        <p className="text-sm text-[var(--color-slate)]">We&apos;ll analyze market conditions in your target area.</p>
+        <h2 className="text-xl font-extrabold text-white mb-1">Where do you want to operate?</h2>
+        <p className="text-sm text-white/50">We&apos;ll analyze market conditions in your target area.</p>
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-2">Operation type</label>
+        <label className={labelCls}>Operation type</label>
         <div className="grid sm:grid-cols-3 gap-3">
           {OPERATION_TYPES.map(({ value, label, desc }) => (
             <button
@@ -37,13 +43,11 @@ export default function StepLocation({ data, onChange }: Props) {
               type="button"
               onClick={() => onChange("operation_type", value)}
               className={`p-4 rounded-xl border-2 text-left transition-all ${
-                data.operation_type === value
-                  ? "border-[var(--color-navy)] bg-[var(--color-navy)]/5"
-                  : "border-[var(--color-border)] hover:border-[var(--color-blue)]"
+                data.operation_type === value ? sel : unsel
               }`}
             >
-              <div className="font-semibold text-sm text-[var(--color-navy)]">{label}</div>
-              <div className="text-xs text-[var(--color-slate)] mt-0.5">{desc}</div>
+              <div className="font-semibold text-sm text-white">{label}</div>
+              <div className="text-xs text-white/50 mt-0.5">{desc}</div>
             </button>
           ))}
         </div>
@@ -53,26 +57,28 @@ export default function StepLocation({ data, onChange }: Props) {
         <>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-2">State</label>
+              <label className={labelCls}>State</label>
               <select
                 value={(data.preferred_state as string) || ""}
                 onChange={(e) => onChange("preferred_state", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] bg-white transition"
+                className={inputCls}
+                style={{ ...inputStyle, colorScheme: 'dark' }}
               >
-                <option value="">Select a state...</option>
+                <option value="" style={{ background: '#12126B' }}>Select a state...</option>
                 {US_STATES.map((state) => (
-                  <option key={state} value={state}>{state}</option>
+                  <option key={state} value={state} style={{ background: '#12126B' }}>{state}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-2">City (optional)</label>
+              <label className={labelCls}>City (optional)</label>
               <input
                 type="text"
                 value={(data.preferred_city as string) || ""}
                 onChange={(e) => onChange("preferred_city", e.target.value)}
                 placeholder="e.g. Austin, Miami..."
-                className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
+                className={inputCls}
+                style={inputStyle}
               />
             </div>
           </div>
@@ -83,9 +89,9 @@ export default function StepLocation({ data, onChange }: Props) {
               id="relocation"
               checked={(data.open_to_relocation as boolean) || false}
               onChange={(e) => onChange("open_to_relocation", e.target.checked)}
-              className="w-4 h-4 accent-[var(--color-navy)]"
+              className="w-4 h-4 accent-[var(--color-gold)]"
             />
-            <label htmlFor="relocation" className="text-sm text-[var(--color-slate)]">
+            <label htmlFor="relocation" className="text-sm text-white/60">
               I&apos;m open to other locations if the data shows a better opportunity
             </label>
           </div>

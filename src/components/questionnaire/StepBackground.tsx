@@ -5,19 +5,25 @@ interface Props {
   onChange: (key: string, value: unknown) => void;
 }
 
+const sel = "border-[var(--color-gold)] bg-white/10 text-white";
+const unsel = "border-white/15 text-white/70 hover:border-white/40 hover:bg-white/5";
+const selFull = "border-[var(--color-gold)] bg-[var(--color-gold)] text-[var(--color-navy)]";
+const unselFull = "border-white/15 text-white/70 hover:border-white/40";
+const labelCls = "block text-sm font-semibold text-white/80 mb-3";
+const inputCls = "w-full px-4 py-2.5 rounded-lg text-sm text-white placeholder-white/30 outline-none transition";
+const inputStyle = { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' };
+
 export default function StepBackground({ data, onChange }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-extrabold text-[var(--color-navy)] mb-1">Tell us about yourself</h2>
-        <p className="text-sm text-[var(--color-slate)]">This helps us tailor your analysis to your situation.</p>
+        <h2 className="text-xl font-extrabold text-white mb-1">Tell us about yourself</h2>
+        <p className="text-sm text-white/50">This helps us tailor your analysis to your situation.</p>
       </div>
 
       {/* Entrepreneur type */}
       <div>
-        <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
-          What best describes you?
-        </label>
+        <label className={labelCls}>What best describes you?</label>
         <div className="grid sm:grid-cols-2 gap-3">
           {[
             { value: "new", icon: BuildingIcon, label: "Aspiring Entrepreneur", desc: "I want to start my first business" },
@@ -28,17 +34,15 @@ export default function StepBackground({ data, onChange }: Props) {
               type="button"
               onClick={() => onChange("entrepreneur_type", value)}
               className={`flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all ${
-                data.entrepreneur_type === value
-                  ? "border-[var(--color-navy)] bg-[var(--color-navy)]/5"
-                  : "border-[var(--color-border)] hover:border-[var(--color-blue)]"
+                data.entrepreneur_type === value ? sel : unsel
               }`}
             >
-              <div className={`p-2 rounded-lg ${data.entrepreneur_type === value ? "bg-[var(--color-navy)] text-white" : "bg-[var(--color-muted)] text-[var(--color-slate)]"}`}>
+              <div className={`p-2 rounded-lg shrink-0 ${data.entrepreneur_type === value ? "bg-[var(--color-gold)] text-[var(--color-navy)]" : "bg-white/10 text-white/60"}`}>
                 <Icon size={18} />
               </div>
               <div>
-                <div className="font-semibold text-sm text-[var(--color-navy)]">{label}</div>
-                <div className="text-xs text-[var(--color-slate)] mt-0.5">{desc}</div>
+                <div className="font-semibold text-sm text-white">{label}</div>
+                <div className="text-xs text-white/50 mt-0.5">{desc}</div>
               </div>
             </button>
           ))}
@@ -47,9 +51,7 @@ export default function StepBackground({ data, onChange }: Props) {
 
       {/* Prior experience */}
       <div>
-        <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
-          Do you have prior business or industry experience?
-        </label>
+        <label className={labelCls}>Do you have prior business or industry experience?</label>
         <div className="flex gap-3">
           {[{ value: true, label: "Yes" }, { value: false, label: "No" }].map(({ value, label }) => (
             <button
@@ -57,9 +59,7 @@ export default function StepBackground({ data, onChange }: Props) {
               type="button"
               onClick={() => onChange("has_industry_experience", value)}
               className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${
-                data.has_industry_experience === value
-                  ? "border-[var(--color-navy)] bg-[var(--color-navy)] text-white"
-                  : "border-[var(--color-border)] text-[var(--color-slate)] hover:border-[var(--color-blue)]"
+                data.has_industry_experience === value ? selFull : unselFull
               }`}
             >
               {label}
@@ -70,24 +70,21 @@ export default function StepBackground({ data, onChange }: Props) {
 
       {data.has_industry_experience === true && (
         <div>
-          <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-2">
-            What industry have you worked in?
-          </label>
+          <label className={labelCls}>What industry have you worked in?</label>
           <input
             type="text"
             value={(data.current_industry as string) || ""}
             onChange={(e) => onChange("current_industry", e.target.value)}
             placeholder="e.g. Restaurant, Retail, Technology..."
-            className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-blue-100 transition"
+            className={inputCls}
+            style={inputStyle}
           />
         </div>
       )}
 
       {/* Commitment level */}
       <div>
-        <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
-          How will you be committing to this business?
-        </label>
+        <label className={labelCls}>How will you be committing to this business?</label>
         <div className="grid sm:grid-cols-2 gap-3">
           {[
             { value: "full_time", label: "Full-Time", desc: "This will be my primary focus" },
@@ -98,13 +95,11 @@ export default function StepBackground({ data, onChange }: Props) {
               type="button"
               onClick={() => onChange("commitment_level", value)}
               className={`p-4 rounded-xl border-2 text-left transition-all ${
-                data.commitment_level === value
-                  ? "border-[var(--color-navy)] bg-[var(--color-navy)]/5"
-                  : "border-[var(--color-border)] hover:border-[var(--color-blue)]"
+                data.commitment_level === value ? sel : unsel
               }`}
             >
-              <div className="font-semibold text-sm text-[var(--color-navy)]">{label}</div>
-              <div className="text-xs text-[var(--color-slate)] mt-0.5">{desc}</div>
+              <div className="font-semibold text-sm text-white">{label}</div>
+              <div className="text-xs text-white/50 mt-0.5">{desc}</div>
             </button>
           ))}
         </div>
@@ -112,9 +107,7 @@ export default function StepBackground({ data, onChange }: Props) {
 
       {/* Business partners */}
       <div>
-        <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
-          Will you have business partners?
-        </label>
+        <label className={labelCls}>Will you have business partners?</label>
         <div className="flex gap-3">
           {[{ value: true, label: "Yes" }, { value: false, label: "No" }].map(({ value, label }) => (
             <button
@@ -122,9 +115,7 @@ export default function StepBackground({ data, onChange }: Props) {
               type="button"
               onClick={() => onChange("has_business_partners", value)}
               className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${
-                data.has_business_partners === value
-                  ? "border-[var(--color-navy)] bg-[var(--color-navy)] text-white"
-                  : "border-[var(--color-border)] text-[var(--color-slate)] hover:border-[var(--color-blue)]"
+                data.has_business_partners === value ? selFull : unselFull
               }`}
             >
               {label}
@@ -135,9 +126,7 @@ export default function StepBackground({ data, onChange }: Props) {
 
       {/* Prior business ownership */}
       <div>
-        <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-3">
-          Have you owned a business before?
-        </label>
+        <label className={labelCls}>Have you owned a business before?</label>
         <div className="space-y-2">
           {[
             { value: "never", label: "Never", desc: "This is my first time" },
@@ -149,18 +138,15 @@ export default function StepBackground({ data, onChange }: Props) {
               type="button"
               onClick={() => onChange("prior_business_ownership", value)}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 text-left transition-all ${
-                data.prior_business_ownership === value
-                  ? "border-[var(--color-navy)] bg-[var(--color-navy)]/5"
-                  : "border-[var(--color-border)] hover:border-[var(--color-blue)]"
+                data.prior_business_ownership === value ? sel : unsel
               }`}
             >
-              <span className="font-semibold text-sm text-[var(--color-navy)]">{label}</span>
-              <span className="text-xs text-[var(--color-slate)]">{desc}</span>
+              <span className="font-semibold text-sm text-white">{label}</span>
+              <span className="text-xs text-white/50">{desc}</span>
             </button>
           ))}
         </div>
       </div>
-
     </div>
   );
 }
